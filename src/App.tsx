@@ -19,6 +19,7 @@ import InvoiceBuilder from "./pages/InvoiceBuilder";
 import ClientOnboarding from "./pages/ClientOnboarding";
 import Reports from "./pages/Reports";
 import Messages from "./pages/Messages";
+import HelpCenter from "./pages/HelpCenter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/time" element={<TimeTracking />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/help" element={<HelpCenter />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/project/new" element={<CreateProject />} />
           <Route path="/project/:projectId" element={<ProjectDetails />} />
