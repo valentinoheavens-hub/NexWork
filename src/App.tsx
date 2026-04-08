@@ -18,6 +18,7 @@ import ContractEditor from "./pages/ContractEditor";
 import InvoiceBuilder from "./pages/InvoiceBuilder";
 import ClientOnboarding from "./pages/ClientOnboarding";
 import Reports from "./pages/Reports";
+import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/invoice/new" element={<InvoiceBuilder />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/time" element={<TimeTracking />} />
+          <Route path="/messages" element={<Messages />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/project/new" element={<CreateProject />} />

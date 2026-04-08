@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import TaskBoard from "@/components/projects/TaskBoard";
 import { 
   ChevronLeft, 
   Plus, 
@@ -14,13 +15,13 @@ import {
   FileText,
   MoreHorizontal,
   ArrowUpRight,
-  History
+  History,
+  MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ProjectDetails = () => {
   const { projectId } = useParams();
-  const [showChangeOrder, setShowChangeOrder] = useState(false);
 
   const project = {
     name: "Brand Identity Redesign",
@@ -59,7 +60,7 @@ const ProjectDetails = () => {
           </div>
           <div className="ml-auto flex gap-3">
             <Button variant="outline" className="border-slate-200">View Portal</Button>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2" onClick={() => setShowChangeOrder(true)}>
+            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
               <Plus className="w-4 h-4" />
               New Change Order
             </Button>
@@ -102,8 +103,15 @@ const ProjectDetails = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Milestones */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-8">
+            {/* Tasks Section */}
+            <Card className="border-none shadow-sm">
+              <CardContent className="p-6">
+                <TaskBoard />
+              </CardContent>
+            </Card>
+
+            {/* Milestones */}
             <Card className="border-none shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg font-bold">Milestones & Deliverables</CardTitle>
@@ -116,7 +124,7 @@ const ProjectDetails = () => {
                       <div className={cn(
                         "w-8 h-8 rounded-full flex items-center justify-center",
                         m.status === "Approved" ? "bg-emerald-50 text-emerald-600" : 
-                        m.status === "Under Review" ? "bg-amber-50 text-amber-600" : "bg-slate-50 text-slate-400"
+                        m.status === "Under Review" ? "bg-amber-50 text-amber-600" : "bg-slate-100 text-slate-400"
                       )}>
                         {m.status === "Approved" ? <CheckCircle2 className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
                       </div>
@@ -208,25 +216,25 @@ const ProjectDetails = () => {
 
             <Card className="border-none shadow-sm bg-indigo-600 text-white">
               <CardContent className="p-6">
-                <h4 className="font-bold mb-2">Client Communication</h4>
+                <div className="flex items-center gap-2 mb-4">
+                  <MessageSquare className="w-5 h-5" />
+                  <h4 className="font-bold">Client Chat</h4>
+                </div>
                 <p className="text-indigo-100 text-sm mb-4">
-                  All messages and files shared with Acme Corp are centralized in the portal.
+                  Centralize all project communication here to avoid email threads.
                 </p>
-                <Button className="w-full bg-white text-indigo-600 hover:bg-indigo-50 border-none">
-                  Open Message Thread
-                </Button>
+                <Link to="/messages">
+                  <Button className="w-full bg-white text-indigo-600 hover:bg-indigo-50 border-none">
+                    Open Message Thread
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
-    </ProjectDetailsModal>
+    </DashboardLayout>
   );
-};
-
-// Simple Modal for Change Order
-const ProjectDetailsModal = ({ children }: { children: React.ReactNode }) => {
-  return <div className="min-h-screen bg-slate-50">{children}</div>;
 };
 
 export default ProjectDetails;
