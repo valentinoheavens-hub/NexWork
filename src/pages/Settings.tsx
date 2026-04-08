@@ -12,7 +12,8 @@ import {
   Bell, 
   CreditCard,
   Upload,
-  Check
+  Check,
+  ExternalLink
 } from "lucide-react";
 
 const Settings = () => {
@@ -100,6 +101,49 @@ const Settings = () => {
                 </Card>
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="payments" className="space-y-6">
+            <Card className="border-none shadow-sm">
+              <CardHeader>
+                <CardTitle>Payment Integrations</CardTitle>
+                <CardDescription>Connect your preferred payment gateways to receive funds globally.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  {[
+                    { name: "Stripe", desc: "Global credit card payments and bank transfers.", status: "Connected", icon: "https://api.dicebear.com/7.x/initials/svg?seed=ST" },
+                    { name: "Paystack", desc: "Optimized for Nigeria, Ghana, and South Africa.", status: "Connected", icon: "https://api.dicebear.com/7.x/initials/svg?seed=PS" },
+                    { name: "Flutterwave", desc: "Accept payments across 30+ African countries.", status: "Not Connected", icon: "https://api.dicebear.com/7.x/initials/svg?seed=FW" },
+                    { name: "M-Pesa", desc: "Direct mobile money payments for East Africa.", status: "Not Connected", icon: "https://api.dicebear.com/7.x/initials/svg?seed=MP" },
+                  ].map((gateway) => (
+                    <div key={gateway.name} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-indigo-100 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center font-bold text-indigo-600">
+                          {gateway.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-slate-900">{gateway.name}</h4>
+                          <p className="text-sm text-slate-500">{gateway.desc}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {gateway.status === "Connected" ? (
+                          <div className="flex items-center gap-1 text-emerald-600 text-sm font-bold">
+                            <Check className="w-4 h-4" /> Connected
+                          </div>
+                        ) : (
+                          <Button variant="outline" size="sm" className="border-slate-200">Connect</Button>
+                        )}
+                        <Button variant="ghost" size="icon" className="text-slate-400">
+                          <ExternalLink className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="domain">

@@ -7,10 +7,12 @@ import {
   Clock, 
   AlertCircle,
   ArrowUpRight,
-  MoreHorizontal
+  MoreHorizontal,
+  CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const Dashboard = () => {
   const stats = [
@@ -29,9 +31,15 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Welcome back, Felix</h1>
-          <p className="text-slate-500">Here's what's happening with your business today.</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Welcome back, Felix</h1>
+            <p className="text-slate-500">Here's what's happening with your business today.</p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" className="border-slate-200">Download Report</Button>
+            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">Quick Invoice</Button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -78,13 +86,12 @@ const Dashboard = () => {
                     </div>
                     <div className="flex items-center gap-8">
                       <div className="hidden md:block">
-                        <p className="text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">Status</p>
+                        <p className="text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">Health</p>
                         <Badge className={cn(
                           "border-none",
-                          project.status === "Completed" ? "bg-emerald-50 text-emerald-700" : 
-                          project.status === "Under Review" ? "bg-amber-50 text-amber-700" : "bg-blue-50 text-blue-700"
+                          project.health === "Healthy" ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
                         )}>
-                          {project.status}
+                          {project.health}
                         </Badge>
                       </div>
                       <div className="w-32 hidden sm:block">
@@ -142,5 +149,4 @@ const Dashboard = () => {
   );
 };
 
-import { cn } from "@/lib/utils";
 export default Dashboard;
