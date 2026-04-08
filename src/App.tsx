@@ -11,6 +11,8 @@ import Invoices from "./pages/Invoices";
 import Clients from "./pages/Clients";
 import TimeTracking from "./pages/TimeTracking";
 import Settings from "./pages/Settings";
+import ProjectDetails from "./pages/ProjectDetails";
+import QuestionnaireBuilder from "./pages/QuestionnaireBuilder";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,8 @@ const App = () => (
           <Route path="/clients" element={<Clients />} />
           <Route path="/time" element={<TimeTracking />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/project/:projectId" element={<ProjectDetails />} />
+          <Route path="/questionnaire-builder" element={<QuestionnaireBuilder />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
