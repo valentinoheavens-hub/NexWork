@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 
 const Messages = () => {
   const [activeChat, setActiveChat] = useState(1);
+  const [messageText, setMessageText] = useState("");
   
   const chats = [
     { id: 1, name: "John Doe", company: "Acme Corp", lastMsg: "The logo concepts look great!", time: "2m ago", unread: 2, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John" },
@@ -110,6 +111,8 @@ const Messages = () => {
                 <Paperclip className="w-5 h-5" />
               </Button>
               <Input 
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
                 placeholder="Type your message..." 
                 className="flex-1 bg-slate-50 border-none focus-visible:ring-1 focus-visible:ring-indigo-500"
               />

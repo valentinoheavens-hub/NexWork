@@ -15,19 +15,29 @@ import {
   AlignLeft,
   List,
   Calendar,
-  Upload
+  Upload,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { showSuccess } from "@/utils/toast";
+
+interface Question {
+  id: number;
+  type: string;
+  label: string;
+  placeholder: string;
+  options?: string[];
+}
 
 const QuestionnaireBuilder = () => {
-  const [questions, setQuestions] = useState([
+  const [questions, setQuestions] = useState<Question[]>([
     { id: 1, type: "short", label: "What is your company's legal name?", placeholder: "e.g. Acme Corp LLC" },
     { id: 2, type: "long", label: "Describe your project goals in detail.", placeholder: "What are you hoping to achieve?" },
-    { id: 3, type: "dropdown", label: "What is your estimated budget?", options: ["$1k - $5k", "$5k - $10k", "$10k+"] },
+    { id: 3, type: "dropdown", label: "What is your estimated budget?", placeholder: "Select a range", options: ["$1k - $5k", "$5k - $10k", "$10k+"] },
   ]);
 
   const addQuestion = (type: string) => {
-    const newQuestion = {
+    const newQuestion: Question = {
       id: Date.now(),
       type,
       label: "New Question",
@@ -35,6 +45,18 @@ const QuestionnaireBuilder = () => {
       options: type === "dropdown" ? ["Option 1", "Option 2"] : undefined
     };
     setQuestions([...questions, newQuestion]);
+  };
+
+  const removeQuestion = (id: number) => {
+    setQuestions(questions.filter(q => q.id !== id));
+  };
+
+  const updateQuestion = (id: number, updates: Partial<Question>) => {
+    setQuestions(questions.map(q => q.id === id ? { ...q, ...updates } : q));
+  };
+
+  const handleSave = () => {
+    showSuccess("Questionnaire template saved successfully!");
   };
 
   return (
@@ -50,7 +72,7 @@ const QuestionnaireBuilder = () => {
               <Eye className="w-4 h-4" />
               Preview Form
             </Button>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2" onClick={handleSave}>
               <Save className="w-4 h-4" />
               Save Template
             </Button>
@@ -107,20 +129,45 @@ const QuestionnaireBuilder = () => {
                           <div className="space-y-2">
                             <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Question Label</Label>
                             <Input 
-                              defaultValue={q.label} 
+                              value={q.label} 
+                              onChange={(e) => updateQuestion(q.id, { label: e.target.value })}
                               className="border-none bg-slate-50 font-bold text-lg focus-visible:ring-indigo-500"
                             />
                           </div>
                           <div className="space-y-2">
                             <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Placeholder / Help Text</Label>
                             <Input 
-                              defaultValue={q.placeholder} 
+                              value={q.placeholder} 
+                              onChange={(e) => updateQuestion(q.id, { placeholder: e.target.value })}
                               className="border-none bg-slate-50 text-slate-600 focus-visible:ring-indigo-500"
                             />
                           </div>
+                          {q.type === "dropdown" && q.options && (
+                            <div className="space-y-2">
+                              <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Options</Label>
+                              <div className="flex flex-wrap gap-2">
+                                {q.options.map((opt, i) => (
+                                  <div key={i} className="flex items-center gap-1 bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md text-sm">
+                                    {opt}
+                                    <button onClick={() => {
+                                      const newOpts = q.options?.filter((_, idx) => idx !== i);
+                                      updateQuestion(q.id, { options: newOpts });
+                                    }}>
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                ))}
+                                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => {
+                                  updateQuestion(q.id, { options: [...(q.options || []), "New Option"] });
+                                }}>
+                                  <Plus className="w-3 h-3 mr-1" /> Add Option
+                                </Button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 ml-4">
-                          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-rose-500">
+                          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-rose-500" onClick={() => removeQuestion(q.id)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
                           <Button variant="ghost" size="icon" className="text-slate-400">

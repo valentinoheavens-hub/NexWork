@@ -17,7 +17,9 @@ import {
   DollarSign, 
   PieChart, 
   ArrowUpRight,
-  Download
+  Download,
+  ShieldCheck,
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -114,22 +116,32 @@ const Reports = () => {
 
           <Card className="border-none shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-bold">Profitability by Client</CardTitle>
+              <CardTitle className="text-lg font-bold">Tax Readiness Summary</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={projectProfitability}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                    <Tooltip 
-                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                    />
-                    <Bar dataKey="profit" fill="#4f46e5" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="cost" fill="#e2e8f0" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+            <CardContent className="space-y-6">
+              <div className="p-4 bg-slate-50 rounded-xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                    <span className="text-sm font-medium text-slate-700">VAT/GST Collected</span>
+                  </div>
+                  <span className="font-bold text-slate-900">$3,420.00</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-500" />
+                    <span className="text-sm font-medium text-slate-700">Deductible Expenses</span>
+                  </div>
+                  <span className="font-bold text-slate-900">$1,250.00</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs text-slate-500">
+                  Based on your current revenue, we recommend setting aside 20% for quarterly tax payments.
+                </p>
+                <Button className="w-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none">
+                  Generate Tax Report
+                </Button>
               </div>
             </CardContent>
           </Card>
