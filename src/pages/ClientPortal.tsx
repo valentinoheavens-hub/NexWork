@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { 
   CheckCircle2, 
@@ -7,17 +7,20 @@ import {
   MessageSquare, 
   Download,
   ArrowRight,
-  AlertCircle
+  AlertCircle,
+  ThumbsUp,
+  MessageCircle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 const ClientPortal = () => {
   const { clientId } = useParams();
+  const [approvedFiles, setApprovedFiles] = useState<number[]>([]);
   
-  // Mock data for the client portal
   const clientBrand = {
     name: "Acme Corp",
     logo: "https://api.dicebear.com/7.x/initials/svg?seed=AC",
@@ -30,9 +33,21 @@ const ClientPortal = () => {
     { id: 3, title: "Final Deliverables", status: "In Progress", date: "Nov 15, 2023" },
   ];
 
+  const deliverables = [
+    { id: 1, name: "Primary Logo - V1.pdf", size: "2.4 MB", type: "PDF", date: "Oct 25" },
+    { id: 2, name: "Brand Guidelines Draft.pdf", size: "5.1 MB", type: "PDF", date: "Oct 26" },
+  ];
+
+  const toggleApproval = (id: number) => {
+    if (approvedFiles.includes(id)) {
+      setApprovedFiles(approvedFiles.filter(fid => fid !== id));
+    } else {
+      setApprovedFiles([...approvedFiles, id]);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Branded Header */}
       <header className="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -54,7 +69,6 @@ const ClientPortal = () => {
       </header>
 
       <main className="max-w-6xl mx-auto p-6 md:p-8 space-y-8">
-        {/* Welcome Section */}
         <div className="bg-indigo-600 rounded-2xl p-8 text-white relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-3xl font-bold mb-2">Welcome back, John</h2>
@@ -75,12 +89,11 @@ const ClientPortal = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Project Progress */}
           <div className="lg:col-span-2 space-y-6">
             <Tabs defaultValue="milestones" className="w-full">
               <TabsList className="bg-white border border-slate-200 p-1 h-12">
                 <TabsTrigger value="milestones" className="data-[state=active]:bg-slate-100">Milestones</TabsTrigger>
-                <TabsTrigger value="files" className="data-[state=active]:bg-slate-100">Files & Assets</TabsTrigger>
+                <TabsTrigger value="files" className="data-[state=active]:bg-slate-100">Deliverables</TabsTrigger>
                 <TabsTrigger value="invoices" className="data-[state=active]:bg-slate-100">Invoices</TabsTrigger>
               </TabsList>
               
@@ -108,24 +121,43 @@ const ClientPortal = () => {
                         </div>
                         <p className="text-sm text-slate-500">Target date: {m.date}</p>
                       </div>
-                      <Button variant="ghost" size="icon" className="ml-4 text-slate-400">
-                        <ArrowRight className="w-5 h-5" />
-                      </Button>
                     </div>
                   </Card>
                 ))}
               </TabsContent>
 
-              <TabsContent value="files" className="mt-6">
-                <Card className="border-none shadow-sm">
-                  <CardContent className="p-6 text-center py-12">
-                    <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                    <h3 className="font-bold text-slate-900">No files shared yet</h3>
-                    <p className="text-slate-500 max-w-xs mx-auto mt-2">
-                      Once deliverables are uploaded, they will appear here for your review and download.
-                    </p>
-                  </CardContent>
-                </Card>
+              <TabsContent value="files" className="mt-6 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {deliverables.map((file) => (
+                    <Card key={file.id} className="border-none shadow-sm overflow-hidden group">
+                      <div className="p-6">
+                        <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 mb-4 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                          <FileText className="w-6 h-6" />
+                        </div>
+                        <h4 className="font-bold text-slate-900 mb-1 truncate">{file.name}</h4>
+                        <p className="text-xs text-slate-500 mb-6">{file.size} • Uploaded {file.date}</p>
+                        
+                        <div className="flex gap-2">
+                          <Button 
+                            variant={approvedFiles.includes(file.id) ? "default" : "outline"}
+                            size="sm" 
+                            className={cn(
+                              "flex-1 gap-2",
+                              approvedFiles.includes(file.id) ? "bg-emerald-600 hover:bg-emerald-700 border-none" : "border-slate-200"
+                            )}
+                            onClick={() => toggleApproval(file.id)}
+                          >
+                            {approvedFiles.includes(file.id) ? <CheckCircle2 className="w-4 h-4" /> : <ThumbsUp className="w-4 h-4" />}
+                            {approvedFiles.includes(file.id) ? "Approved" : "Approve"}
+                          </Button>
+                          <Button variant="outline" size="sm" className="border-slate-200">
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
               </TabsContent>
 
               <TabsContent value="invoices" className="mt-6 space-y-4">
@@ -150,7 +182,6 @@ const ClientPortal = () => {
             </Tabs>
           </div>
 
-          {/* Sidebar Info */}
           <div className="space-y-6">
             <Card className="border-none shadow-sm">
               <CardHeader>
@@ -202,5 +233,4 @@ const ClientPortal = () => {
   );
 };
 
-import { cn } from "@/lib/utils";
 export default ClientPortal;

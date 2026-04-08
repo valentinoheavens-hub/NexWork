@@ -16,6 +16,8 @@ import QuestionnaireBuilder from "./pages/QuestionnaireBuilder";
 import CreateProject from "./pages/CreateProject";
 import ContractEditor from "./pages/ContractEditor";
 import InvoiceBuilder from "./pages/InvoiceBuilder";
+import ClientOnboarding from "./pages/ClientOnboarding";
+import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,12 +32,14 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/portal/:clientId" element={<ClientPortal />} />
+          <Route path="/onboarding/:token" element={<ClientOnboarding />} />
           <Route path="/contracts" element={<Contracts />} />
           <Route path="/contract/edit/:contractId" element={<ContractEditor />} />
           <Route path="/invoices" element={<Invoices />} />
           <Route path="/invoice/new" element={<InvoiceBuilder />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/time" element={<TimeTracking />} />
+          <Route path="/reports" element={<Reports />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/project/new" element={<CreateProject />} />
           <Route path="/project/:projectId" element={<ProjectDetails />} />
