@@ -9,9 +9,7 @@ import {
   Settings, 
   Bell,
   Search,
-  Plus,
-  Briefcase,
-  ShieldAlert
+  Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,8 +20,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   
   const navigation = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Projects", href: "/projects", icon: Briefcase },
-    { name: "Scope Changes", href: "/scope", icon: ShieldAlert },
+    { name: "Clients", href: "/clients", icon: Users },
     { name: "Contracts", href: "/contracts", icon: FileText },
     { name: "Invoices", href: "/invoices", icon: CreditCard },
     { name: "Time Tracking", href: "/time", icon: Clock },
@@ -43,7 +40,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-4 space-y-1">
           {navigation.map((item) => {
             const isActive = location.pathname === item.href;
             return (
