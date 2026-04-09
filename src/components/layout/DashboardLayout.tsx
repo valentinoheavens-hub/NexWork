@@ -27,7 +27,8 @@ import {
   Beaker,
   Compass,
   Globe,
-  Zap
+  Zap,
+  HeartPulse
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "Diagnostics", href: "/diagnostics", icon: Activity },
     { name: "Strategy", href: "/strategy", icon: Compass },
+    { name: "Team Vitality", href: "/team-optimization", icon: HeartPulse },
     { name: "Market Intel", href: "/market", icon: Globe },
     { name: "Growth Lab", href: "/growth", icon: Beaker },
     { name: "Workflows", href: "/workflows", icon: Zap },
