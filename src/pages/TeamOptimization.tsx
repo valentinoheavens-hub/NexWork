@@ -19,7 +19,10 @@ import {
   MoreHorizontal,
   Plus,
   Compass,
-  Activity
+  Activity,
+  Trophy,
+  Star,
+  Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +38,10 @@ const TeamOptimization = () => {
       vitality: 75,
       status: "Peak Performance",
       currentFocus: "Fintech Brand Identity",
-      burnoutRisk: "Low"
+      burnoutRisk: "Low",
+      tenure: "3.2 years",
+      rating: 4.9,
+      awards: ["Design Lead of Q3", "Client Favorite"]
     },
     {
       id: 2,
@@ -47,7 +53,10 @@ const TeamOptimization = () => {
       vitality: 42,
       status: "High Output / At Risk",
       currentFocus: "API Integration",
-      burnoutRisk: "High"
+      burnoutRisk: "High",
+      tenure: "1.5 years",
+      rating: 4.7,
+      awards: ["Bug Crusher 2023"]
     },
     {
       id: 3,
@@ -59,9 +68,29 @@ const TeamOptimization = () => {
       vitality: 82,
       status: "Strategic Lead",
       currentFocus: "Q4 Planning",
-      burnoutRisk: "Low"
+      burnoutRisk: "Low",
+      tenure: "4.1 years",
+      rating: 5.0,
+      awards: ["Visionary Award", "Top Mentor"]
     }
   ];
+
+  const renderStars = (rating: number) => {
+    return (
+      <div className="flex items-center gap-0.5">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star 
+            key={star} 
+            className={cn(
+              "w-3 h-3", 
+              star <= Math.floor(rating) ? "fill-amber-400 text-amber-400" : "text-slate-200"
+            )} 
+          />
+        ))}
+        <span className="text-[10px] font-bold text-slate-600 ml-1">{rating}</span>
+      </div>
+    );
+  };
 
   return (
     <DashboardLayout>
@@ -135,61 +164,76 @@ const TeamOptimization = () => {
               {team.map((member) => (
                 <Card key={member.id} className="border-none shadow-sm hover:shadow-md transition-all group">
                   <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row gap-6">
-                      {/* Profile Info */}
-                      <div className="flex items-center gap-4 min-w-[240px]">
-                        <Avatar className="w-16 h-16 rounded-2xl border-2 border-slate-50">
-                          <AvatarImage src={member.avatar} />
-                          <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h4 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{member.name}</h4>
-                          <p className="text-xs text-slate-500 mb-2">{member.role}</p>
-                          <Badge className={cn(
-                            "border-none text-[10px]",
-                            member.burnoutRisk === "High" ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700"
-                          )}>
-                            {member.status}
-                          </Badge>
+                    <div className="flex flex-col md:flex-row gap-8">
+                      {/* Profile Info Section */}
+                      <div className="flex flex-col items-center md:items-start gap-4 min-w-[200px]">
+                        <div className="relative">
+                          <Avatar className="w-24 h-24 rounded-3xl border-4 border-white shadow-xl">
+                            <AvatarImage src={member.avatar} />
+                            <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1.5 shadow-lg border border-slate-50">
+                            {renderStars(member.rating)}
+                          </div>
+                        </div>
+                        <div className="text-center md:text-left space-y-1">
+                          <h4 className="font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">{member.name}</h4>
+                          <p className="text-xs font-medium text-slate-500">{member.role}</p>
+                          <div className="flex items-center justify-center md:justify-start gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                            <Calendar className="w-3 h-3" />
+                            {member.tenure} with us
+                          </div>
                         </div>
                       </div>
 
-                      {/* Metrics */}
-                      <div className="flex-1 grid grid-cols-3 gap-6">
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            <span>Alignment</span>
-                            <span className="text-slate-900">{member.alignment}%</span>
+                      {/* Metrics & Awards Section */}
+                      <div className="flex-1 space-y-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                              <span>Alignment</span>
+                              <span className="text-slate-900">{member.alignment}%</span>
+                            </div>
+                            <Progress value={member.alignment} className="h-1.5 bg-slate-100 [&>div]:bg-indigo-500" />
                           </div>
-                          <Progress value={member.alignment} className="h-1.5 bg-slate-100 [&>div]:bg-indigo-500" />
-                          <p className="text-[10px] text-slate-400">Vision Synergy</p>
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                              <span>Engagement</span>
+                              <span className="text-slate-900">{member.engagement}%</span>
+                            </div>
+                            <Progress value={member.engagement} className="h-1.5 bg-slate-100 [&>div]:bg-emerald-500" />
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                              <span>Vitality</span>
+                              <span className={cn(
+                                "font-bold",
+                                member.vitality < 50 ? "text-rose-600" : "text-slate-900"
+                              )}>{member.vitality}%</span>
+                            </div>
+                            <Progress value={member.vitality} className={cn(
+                              "h-1.5 bg-slate-100",
+                              member.vitality < 50 ? "[&>div]:bg-rose-500" : "[&>div]:bg-blue-500"
+                            )} />
+                          </div>
                         </div>
+
+                        {/* Awards Section */}
                         <div className="space-y-2">
-                          <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            <span>Engagement</span>
-                            <span className="text-slate-900">{member.engagement}%</span>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Internal Awards</p>
+                          <div className="flex flex-wrap gap-2">
+                            {member.awards.map((award, i) => (
+                              <Badge key={i} variant="secondary" className="bg-amber-50 text-amber-700 border-none text-[10px] px-2 py-1 flex items-center gap-1.5">
+                                <Trophy className="w-3 h-3" />
+                                {award}
+                              </Badge>
+                            ))}
                           </div>
-                          <Progress value={member.engagement} className="h-1.5 bg-slate-100 [&>div]:bg-emerald-500" />
-                          <p className="text-[10px] text-slate-400">JD Fulfillment</p>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            <span>Vitality</span>
-                            <span className={cn(
-                              "font-bold",
-                              member.vitality < 50 ? "text-rose-600" : "text-slate-900"
-                            )}>{member.vitality}%</span>
-                          </div>
-                          <Progress value={member.vitality} className={cn(
-                            "h-1.5 bg-slate-100",
-                            member.vitality < 50 ? "[&>div]:bg-rose-500" : "[&>div]:bg-blue-500"
-                          )} />
-                          <p className="text-[10px] text-slate-400">Work-Life Balance</p>
                         </div>
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-start gap-2">
                         <Button variant="ghost" size="icon" className="text-slate-400">
                           <Activity className="w-4 h-4" />
                         </Button>
