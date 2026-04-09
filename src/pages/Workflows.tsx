@@ -18,12 +18,34 @@ import {
   FileText, 
   CreditCard,
   Clock,
-  MoreVertical
+  MoreVertical,
+  Sparkles,
+  CheckCircle2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess } from "@/utils/toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Workflows = () => {
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [workflows, setWorkflows] = useState([
     { 
       id: 1, 
@@ -58,6 +80,44 @@ const Workflows = () => {
     showSuccess("Workflow status updated.");
   };
 
+  const handleCreateWorkflow = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const name = formData.get("name") as string;
+    const trigger = formData.get("trigger") as string;
+
+    const newWorkflow = {
+      id: Date.now(),
+      name: name || "Untitled Workflow",
+      trigger: trigger || "Manual Trigger",
+      actions: ["Custom Action"],
+      active: true,
+      runs: 0
+    };
+
+    setWorkflows([newWorkflow, ...workflows]);
+    setIsCreateOpen(false);
+    showSuccess("New workflow created successfully!");
+  };
+
+  const simulateAIGeneration = () => {
+    setIsGenerating(true);
+    setTimeout(() => {
+      const aiWorkflow = {
+        id: Date.now(),
+        name: "AI: Smart Follow-up",
+        trigger: "Proposal → Viewed (No response 24h)",
+        actions: ["Send Gentle Reminder", "Notify Slack", "Schedule Call"],
+        active: true,
+        runs: 0
+      };
+      setWorkflows([aiWorkflow, ...workflows]);
+      setIsGenerating(false);
+      setIsCreateOpen(false);
+      showSuccess("AI generated a smart follow-up workflow for you!");
+    }, 1500);
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -66,10 +126,71 @@ const Workflows = () => {
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">Workflows & Automations</h1>
             <p className="text-slate-500">Automate your business processes with custom triggers and actions.</p>
           </div>
-          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-lg shadow-indigo-100">
-            <Plus className="w-4 h-4" />
-            Create Workflow
-          </Button>
+          
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-lg shadow-indigo-100">
+                <Plus className="w-4 h-4" />
+                Create Workflow
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px] border-none shadow-2xl rounded-3xl">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold">Create New Workflow</DialogTitle>
+                <DialogDescription>
+                  Set up a trigger and a series of actions to automate your work.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleCreateWorkflow} className="space-y-6 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="font-bold text-slate-700">Workflow Name</Label>
+                  <Input id="name" name="name" placeholder="e.g. Post-Project Feedback" className="rounded-xl border-slate-200" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="trigger" className="font-bold text-slate-700">Trigger Event</Label>
+                  <Select name="trigger">
+                    <SelectTrigger className="rounded-xl border-slate-200">
+                      <SelectValue placeholder="Select a trigger" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Lead Created">New Lead Created</SelectItem>
+                      <SelectItem value="Contract Signed">Contract Signed</SelectItem>
+                      <SelectItem value="Invoice Paid">Invoice Paid</SelectItem>
+                      <SelectItem value="Project Completed">Project Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 text-indigo-600">
+                      <Sparkles className="w-4 h-4" />
+                      <span className="text-xs font-bold uppercase tracking-wider">AI Assistant</span>
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-indigo-600 hover:bg-indigo-100 h-7 text-xs font-bold"
+                      onClick={simulateAIGeneration}
+                      disabled={isGenerating}
+                    >
+                      {isGenerating ? "Generating..." : "Generate with AI"}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-indigo-700 leading-relaxed">
+                    Not sure what to automate? Let our AI suggest a workflow based on your recent business activity.
+                  </p>
+                </div>
+
+                <DialogFooter>
+                  <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-6 font-bold">
+                    Create Workflow
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Automation Stats */}
@@ -105,14 +226,20 @@ const Workflows = () => {
                 </div>
               </div>
               <p className="text-sm font-medium text-slate-500">Active Workflows</p>
-              <h3 className="text-3xl font-bold text-slate-900">8</h3>
+              <h3 className="text-3xl font-bold text-slate-900">{workflows.filter(w => w.active).length}</h3>
             </CardContent>
           </Card>
         </div>
 
         {/* Workflow List */}
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-slate-900">Active Workflows</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold text-slate-900">Active Workflows</h3>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" className="text-slate-500 font-bold">All</Button>
+              <Button variant="ghost" size="sm" className="text-slate-400">Drafts</Button>
+            </div>
+          </div>
           <div className="grid grid-cols-1 gap-4">
             {workflows.map((workflow) => (
               <Card key={workflow.id} className="border-none shadow-sm hover:shadow-md transition-all group">
@@ -126,7 +253,12 @@ const Workflows = () => {
                         <Zap className="w-6 h-6" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{workflow.name}</h4>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{workflow.name}</h4>
+                          {workflow.name.startsWith("AI:") && (
+                            <Badge className="bg-indigo-100 text-indigo-700 border-none text-[10px] px-1.5 py-0">AI</Badge>
+                          )}
+                        </div>
                         <p className="text-xs text-slate-500 flex items-center gap-1">
                           <Play className="w-3 h-3" /> Trigger: {workflow.trigger}
                         </p>
