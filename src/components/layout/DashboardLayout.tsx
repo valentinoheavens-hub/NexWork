@@ -23,7 +23,8 @@ import {
   FolderOpen,
   Calendar as CalendarIcon,
   Activity,
-  Briefcase
+  Briefcase,
+  Beaker
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const navigation = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "Diagnostics", href: "/diagnostics", icon: Activity },
+    { name: "Growth Lab", href: "/growth", icon: Beaker },
     { name: "Leads", href: "/leads", icon: Briefcase },
     { name: "Clients", href: "/clients", icon: Users },
     { name: "Projects", href: "/projects", icon: Target },
