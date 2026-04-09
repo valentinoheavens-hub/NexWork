@@ -22,9 +22,11 @@ import {
   Activity,
   Trophy,
   Star,
-  Calendar
+  Calendar,
+  UserPlus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 const TeamOptimization = () => {
   const team = [
@@ -32,7 +34,7 @@ const TeamOptimization = () => {
       id: 1,
       name: "Sarah Chen",
       role: "Senior UI/UX Designer",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200&h=200",
       alignment: 92,
       engagement: 88,
       vitality: 75,
@@ -47,7 +49,7 @@ const TeamOptimization = () => {
       id: 2,
       name: "Marcus T.",
       role: "Full-stack Developer",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200&h=200",
       alignment: 85,
       engagement: 95,
       vitality: 42,
@@ -62,7 +64,7 @@ const TeamOptimization = () => {
       id: 3,
       name: "Elena Moss",
       role: "Project Manager",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena",
+      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200&h=200",
       alignment: 98,
       engagement: 90,
       vitality: 82,
@@ -102,10 +104,12 @@ const TeamOptimization = () => {
           </div>
           <div className="flex gap-3">
             <Button variant="outline" className="border-slate-200">Vitality Report</Button>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-lg shadow-indigo-100">
-              <Plus className="w-4 h-4" />
-              Add Team Member
-            </Button>
+            <Link to="/staff-onboarding">
+              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-lg shadow-indigo-100">
+                <UserPlus className="w-4 h-4" />
+                Onboard New Staff
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -168,8 +172,8 @@ const TeamOptimization = () => {
                       {/* Profile Info Section */}
                       <div className="flex flex-col items-center md:items-start gap-4 min-w-[200px]">
                         <div className="relative">
-                          <Avatar className="w-24 h-24 rounded-3xl border-4 border-white shadow-xl">
-                            <AvatarImage src={member.avatar} />
+                          <Avatar className="w-24 h-24 rounded-3xl border-4 border-white shadow-xl overflow-hidden">
+                            <AvatarImage src={member.avatar} className="object-cover" />
                             <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
                           </Avatar>
                           <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1.5 shadow-lg border border-slate-50">

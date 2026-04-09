@@ -35,6 +35,7 @@ import QuestionnaireBuilder from "./pages/QuestionnaireBuilder";
 import CreateProject from "./pages/CreateProject";
 import ContractEditor from "./pages/ContractEditor";
 import ClientOnboarding from "./pages/ClientOnboarding";
+import StaffOnboarding from "./pages/StaffOnboarding";
 import Services from "./pages/Services";
 import Expenses from "./pages/Expenses";
 import Files from "./pages/Files";
@@ -67,6 +68,7 @@ const App = () => (
           <Route path="/project/:projectId/change-order" element={<ChangeOrderBuilder />} />
           <Route path="/portal/:clientId" element={<ClientPortal />} />
           <Route path="/onboarding/:token" element={<ClientOnboarding />} />
+          <Route path="/staff-onboarding" element={<StaffOnboarding />} />
           <Route path="/contracts" element={<Contracts />} />
           <Route path="/contract/edit/:contractId" element={<ContractEditor />} />
           <Route path="/invoices" element={<Invoices />} />
