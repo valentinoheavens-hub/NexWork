@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import BusinessDiagnostics from "./pages/BusinessDiagnostics";
+import Leads from "./pages/Leads";
 import Projects from "./pages/Projects";
 import Proposals from "./pages/Proposals";
 import ProposalBuilder from "./pages/ProposalBuilder";
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/diagnostics" element={<BusinessDiagnostics />} />
+          <Route path="/leads" element={<Leads />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/proposals" element={<Proposals />} />
           <Route path="/proposal/new" element={<ProposalBuilder />} />
