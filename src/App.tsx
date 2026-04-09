@@ -1,3 +1,5 @@
+"use client";
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,6 +29,8 @@ import QuestionnaireBuilder from "./pages/QuestionnaireBuilder";
 import CreateProject from "./pages/CreateProject";
 import ContractEditor from "./pages/ContractEditor";
 import ClientOnboarding from "./pages/ClientOnboarding";
+import Services from "./pages/Services";
+import Expenses from "./pages/Expenses";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +66,8 @@ const App = () => (
           <Route path="/project/new" element={<CreateProject />} />
           <Route path="/project/:projectId" element={<ProjectDetails />} />
           <Route path="/questionnaire-builder" element={<QuestionnaireBuilder />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/expenses" element={<Expenses />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

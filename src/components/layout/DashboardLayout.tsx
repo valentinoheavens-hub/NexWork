@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -15,7 +17,9 @@ import {
   HelpCircle,
   LogOut,
   Target,
-  FileSignature
+  FileSignature,
+  Package,
+  Receipt
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,9 +40,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "Clients", href: "/clients", icon: Users },
     { name: "Projects", href: "/projects", icon: Target },
+    { name: "Services", href: "/services", icon: Package },
     { name: "Proposals", href: "/proposals", icon: FileSignature },
     { name: "Contracts", href: "/contracts", icon: FileText },
     { name: "Invoices", href: "/invoices", icon: CreditCard },
+    { name: "Expenses", href: "/expenses", icon: Receipt },
     { name: "Messages", href: "/messages", icon: MessageSquare },
     { name: "Time Tracking", href: "/time", icon: Clock },
     { name: "Reports", href: "/reports", icon: BarChart3 },
