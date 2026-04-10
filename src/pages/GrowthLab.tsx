@@ -20,7 +20,8 @@ import {
   Rocket,
   Plus,
   MoreVertical,
-  Filter
+  Filter,
+  Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
