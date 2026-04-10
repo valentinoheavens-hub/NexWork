@@ -13,6 +13,7 @@ import MarketIntelligence from "./pages/MarketIntelligence";
 import GrowthLab from "./pages/GrowthLab";
 import Workflows from "./pages/Workflows";
 import Leads from "./pages/Leads";
+import LeadDetails from "./pages/LeadDetails";
 import Projects from "./pages/Projects";
 import ProjectTemplates from "./pages/ProjectTemplates";
 import Proposals from "./pages/Proposals";
@@ -64,6 +65,7 @@ const App = () => (
           <Route path="/growth" element={<GrowthLab />} />
           <Route path="/workflows" element={<Workflows />} />
           <Route path="/leads" element={<Leads />} />
+          <Route path="/lead/:leadId" element={<LeadDetails />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/project-templates" element={<ProjectTemplates />} />
           <Route path="/proposals" element={<Proposals />} />

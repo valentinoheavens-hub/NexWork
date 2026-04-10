@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -168,46 +169,48 @@ const Leads = () => {
                 {leads
                   .filter((lead) => lead.stage === stage.id)
                   .map((lead) => (
-                    <Card key={lead.id} className="border-none shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing group">
-                      <CardContent className="p-4 space-y-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="w-8 h-8 rounded-lg">
-                              <AvatarImage src={lead.avatar} />
-                              <AvatarFallback>{lead.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <h4 className="font-bold text-sm text-slate-900 group-hover:text-indigo-600 transition-colors">{lead.name}</h4>
-                              <p className="text-[10px] text-slate-500">{lead.contact}</p>
+                    <Link key={lead.id} to={`/lead/${lead.id}`}>
+                      <Card className="border-none shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing group">
+                        <CardContent className="p-4 space-y-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="w-8 h-8 rounded-lg">
+                                <AvatarImage src={lead.avatar} />
+                                <AvatarFallback>{lead.name.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <h4 className="font-bold text-sm text-slate-900 group-hover:text-indigo-600 transition-colors">{lead.name}</h4>
+                                <p className="text-[10px] text-slate-500">{lead.contact}</p>
+                              </div>
                             </div>
-                          </div>
-                          <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-300 opacity-0 group-hover:opacity-100">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <p className="font-bold text-slate-900">{lead.value}</p>
-                          <Badge variant="outline" className="text-[10px] border-slate-100 text-slate-400">
-                            {lead.source}
-                          </Badge>
-                        </div>
-
-                        <div className="pt-3 border-t border-slate-50 flex items-center justify-between">
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-indigo-600">
-                              <Mail className="w-3.5 h-3.5" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-indigo-600">
-                              <Phone className="w-3.5 h-3.5" />
+                            <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-300 opacity-0 group-hover:opacity-100">
+                              <MoreVertical className="w-4 h-4" />
                             </Button>
                           </div>
-                          <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                            <Calendar className="w-3 h-3" /> {lead.lastActive}
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
+
+                          <div className="flex items-center justify-between">
+                            <p className="font-bold text-slate-900">{lead.value}</p>
+                            <Badge variant="outline" className="text-[10px] border-slate-100 text-slate-400">
+                              {lead.source}
+                            </Badge>
+                          </div>
+
+                          <div className="pt-3 border-t border-slate-50 flex items-center justify-between">
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-indigo-600">
+                                <Mail className="w-3.5 h-3.5" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-indigo-600">
+                                <Phone className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                            <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                              <Calendar className="w-3 h-3" /> {lead.lastActive}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
                   ))}
                 
                 {leads.filter(l => l.stage === stage.id).length === 0 && (
