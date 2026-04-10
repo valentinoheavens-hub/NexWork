@@ -31,7 +31,7 @@ const Clients = () => {
       avatar: "https://api.dicebear.com/7.x/initials/svg?seed=AC",
       assignedStaff: [
         { name: "Felix K.", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" },
-        { name: "Sarah Chen", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" }
+        { name: "Sarah Chen", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200&h=200" }
       ]
     },
     { 
@@ -44,7 +44,7 @@ const Clients = () => {
       revenue: "$8,200",
       avatar: "https://api.dicebear.com/7.x/initials/svg?seed=GT",
       assignedStaff: [
-        { name: "Marcus T.", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus" }
+        { name: "Marcus T.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200&h=200" }
       ]
     },
     { 

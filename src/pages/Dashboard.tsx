@@ -155,7 +155,7 @@ const Dashboard = () => {
             <CardContent>
               <div className="space-y-6">
                 {[
-                  { user: "Sarah M.", action: "signed the contract", time: "2h ago", type: "contract" },
+                  { user: "Sarah Chen", action: "signed the contract", time: "2h ago", type: "contract" },
                   { user: "Acme Corp", action: "paid invoice #INV-001", time: "5h ago", type: "payment" },
                   { user: "Global Tech", action: "requested a scope change", time: "1d ago", type: "scope" },
                 ].map((activity, i) => (

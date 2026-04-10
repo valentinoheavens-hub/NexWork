@@ -19,6 +19,7 @@ import {
   Mail
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 const Settings = () => {
   return (
@@ -121,8 +122,9 @@ const Settings = () => {
               <CardContent className="space-y-4">
                 {[
                   { name: "Felix K.", email: "felix@nexwork.io", role: "Owner", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" },
-                  { name: "Sarah Chen", email: "sarah@nexwork.io", role: "Project Manager", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" },
-                  { name: "Marcus T.", email: "marcus@nexwork.io", role: "Designer", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus" },
+                  { name: "Sarah Chen", email: "sarah@nexwork.io", role: "Senior UI/UX Designer", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200&h=200" },
+                  { name: "Marcus T.", email: "marcus@nexwork.io", role: "Full-stack Developer", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200&h=200" },
+                  { name: "Elena Moss", email: "elena@nexwork.io", role: "Project Manager", avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200&h=200" },
                 ].map((member) => (
                   <div key={member.email} className="flex items-center justify-between p-4 rounded-xl border border-slate-100">
                     <div className="flex items-center gap-4">

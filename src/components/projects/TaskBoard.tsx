@@ -13,7 +13,7 @@ const TaskBoard = () => {
       title: "Research competitor visual identities", 
       status: "completed", 
       priority: "medium",
-      assignee: { name: "Sarah Chen", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" }
+      assignee: { name: "Sarah Chen", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200&h=200" }
     },
     { 
       id: 2, 
@@ -27,14 +27,14 @@ const TaskBoard = () => {
       title: "Select typography pairings", 
       status: "todo", 
       priority: "medium",
-      assignee: { name: "Sarah Chen", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" }
+      assignee: { name: "Sarah Chen", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200&h=200" }
     },
     { 
       id: 4, 
       title: "Create color palette variations", 
       status: "todo", 
       priority: "low",
-      assignee: { name: "Marcus T.", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus" }
+      assignee: { name: "Marcus T.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200&h=200" }
     },
   ]);
 

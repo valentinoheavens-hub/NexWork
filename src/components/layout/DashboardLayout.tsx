@@ -184,9 +184,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                 </div>
                 <div className="max-h-80 overflow-y-auto">
                   {[
-                    { title: "Contract Signed", desc: "John Doe signed the Brand Identity Agreement", time: "2m ago", icon: FileText, color: "text-emerald-500", bg: "bg-emerald-50" },
+                    { title: "Contract Signed", desc: "Sarah Chen signed the Brand Identity Agreement", time: "2m ago", icon: FileText, color: "text-emerald-500", bg: "bg-emerald-50" },
                     { title: "Payment Received", desc: "Acme Corp paid Invoice #INV-001", time: "1h ago", icon: CreditCard, color: "text-blue-500", bg: "bg-blue-50" },
-                    { title: "New Message", desc: "Sarah Smith sent you a message", time: "3h ago", icon: MessageSquare, color: "text-indigo-500", bg: "bg-indigo-50" },
+                    { title: "New Message", desc: "Elena Moss sent you a message", time: "3h ago", icon: MessageSquare, color: "text-indigo-500", bg: "bg-indigo-50" },
                   ].map((n, i) => (
                     <div key={i} className="p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3">
                       <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", n.bg, n.color)}>
