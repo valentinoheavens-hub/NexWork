@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,33 +14,62 @@ import {
   Bold,
   Italic,
   List,
-  Type
+  Type,
+  Loader2
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/lib/supabase";
+import { showSuccess, showError } from "@/utils/toast";
 
 const ContractEditor = () => {
   const navigate = useNavigate();
   const { contractId } = useParams();
-  const [content, setContent] = useState(`
-# SERVICE AGREEMENT
+  const [content, setContent] = useState("");
+  const [title, setTitle] = useState("Loading...");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-**Date:** October 28, 2023
-**Provider:** NexWork Design Studio
-**Client:** Acme Corp
+  useEffect(() => {
+    if (contractId) fetchContract();
+  }, [contractId]);
 
-## 1. Scope of Work
-The Provider agrees to deliver a complete Brand Identity Redesign including:
-- Primary and Secondary Logos
-- Color Palette & Typography Guidelines
-- Social Media Kit (5 platforms)
-- 2 Rounds of Revisions
+  const fetchContract = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('contracts')
+        .select('*')
+        .eq('id', contractId)
+        .single();
+      
+      if (error) throw error;
+      setContent(data.content || "");
+      setTitle(data.title);
+    } catch (err) {
+      showError("Could not load contract.");
+      navigate("/contracts");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-## 2. Payment Terms
-The total project fee is $5,000.00. A 50% deposit is required before work commences. The remaining 50% is due upon final approval of deliverables.
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('contracts')
+        .update({ content })
+        .eq('id', contractId);
+      
+      if (error) throw error;
+      showSuccess("Contract saved successfully!");
+    } catch (err) {
+      showError("Failed to save.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-## 3. Timeline
-Work will commence on November 1, 2023, with an estimated completion date of December 15, 2023.
-  `);
+  if (loading) return <DashboardLayout><div className="flex justify-center py-20"><Loader2 className="animate-spin" /></div></DashboardLayout>;
 
   return (
     <DashboardLayout>
@@ -49,16 +80,14 @@ Work will commence on November 1, 2023, with an estimated completion date of Dec
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">Edit Contract</h1>
-              <p className="text-slate-500">Brand Identity Agreement • Acme Corp</p>
+              <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
+              <p className="text-slate-500">Editing Contract Draft</p>
             </div>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" className="gap-2">
-              <Eye className="w-4 h-4" /> Preview
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Save className="w-4 h-4" /> Save Draft
+            <Button variant="outline" className="gap-2" onClick={handleSave} disabled={saving}>
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save Draft
             </Button>
             <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
               <Send className="w-4 h-4" /> Send to Client
@@ -86,27 +115,6 @@ Work will commence on November 1, 2023, with an estimated completion date of Dec
           </div>
 
           <div className="space-y-6">
-            <Card className="border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-400">Contract Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-400">Status</p>
-                  <p className="text-sm font-bold text-amber-600">Draft</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-400">Last Edited</p>
-                  <p className="text-sm text-slate-900">2 minutes ago</p>
-                </div>
-                <div className="pt-4 border-t border-slate-100">
-                  <Button variant="outline" className="w-full gap-2">
-                    <Download className="w-4 h-4" /> Download PDF
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
             <Card className="border-none shadow-sm bg-indigo-50 border-indigo-100">
               <CardContent className="p-6">
                 <h4 className="font-bold text-indigo-900 mb-2">AI Assistant</h4>
