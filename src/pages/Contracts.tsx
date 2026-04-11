@@ -1,4 +1,7 @@
+"use client";
+
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,18 +15,39 @@ import {
   MoreVertical,
   CheckCircle2,
   Clock,
-  History
+  History,
+  ArrowRight,
+  Loader2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { showSuccess } from "@/utils/toast";
 
 const Contracts = () => {
+  const navigate = useNavigate();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [description, setDescription] = useState("");
+  const [serviceType, setServiceType] = useState("Design Services");
 
   const contracts = [
     { id: 1, title: "Brand Identity Agreement", client: "Acme Corp", status: "Signed", date: "Oct 01, 2023", value: "$5,000" },
     { id: 2, title: "UI/UX Design Services", client: "Global Tech", status: "Sent", date: "Oct 28, 2023", value: "$8,500" },
     { id: 3, title: "Marketing Advisory", client: "Zest Foods", status: "Draft", date: "Nov 02, 2023", value: "$2,000" },
   ];
+
+  const handleGenerate = () => {
+    if (!description) return;
+    
+    setIsGenerating(true);
+    
+    // Simulate AI processing time
+    setTimeout(() => {
+      setIsGenerating(false);
+      showSuccess("AI Draft Generated! Opening editor...");
+      // In a real app, we'd pass the generated content to the editor
+      navigate("/contract/edit/new-draft");
+    }, 2000);
+  };
 
   return (
     <DashboardLayout>
@@ -41,7 +65,7 @@ const Contracts = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* AI Generator Tool */}
-          <Card className="lg:col-span-1 border-none shadow-sm bg-indigo-50 border-indigo-100">
+          <Card className="lg:col-span-1 border-none shadow-sm bg-indigo-50 border-indigo-100 relative overflow-hidden">
             <CardHeader>
               <div className="flex items-center gap-2 text-indigo-600 mb-1">
                 <Sparkles className="w-5 h-5" />
@@ -52,17 +76,23 @@ const Contracts = () => {
                 Describe your project scope in plain English and our AI will draft a professional contract.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 relative z-10">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700">Project Description</label>
                 <Textarea 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   placeholder="e.g. I'm designing a 5-page website for a law firm. Includes brand guidelines, 2 rounds of revisions, and delivery in 4 weeks."
-                  className="min-h-[150px] bg-white border-slate-200 focus:ring-indigo-500"
+                  className="min-h-[150px] bg-white border-slate-200 focus:ring-indigo-500 rounded-xl"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700">Service Type</label>
-                <select className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <select 
+                  value={serviceType}
+                  onChange={(e) => setServiceType(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
                   <option>Design Services</option>
                   <option>Software Development</option>
                   <option>Consulting</option>
@@ -70,13 +100,24 @@ const Contracts = () => {
                 </select>
               </div>
               <Button 
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-                onClick={() => setIsGenerating(true)}
-                disabled={isGenerating}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-6 rounded-xl font-bold group"
+                onClick={handleGenerate}
+                disabled={isGenerating || !description}
               >
-                {isGenerating ? "Generating Draft..." : "Generate Contract Draft"}
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Analyzing Scope...
+                  </>
+                ) : (
+                  <>
+                    Generate Contract Draft
+                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
               </Button>
             </CardContent>
+            <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-indigo-200/20 rounded-full blur-3xl" />
           </Card>
 
           {/* Contract List */}
@@ -84,13 +125,13 @@ const Contracts = () => {
             <div className="flex items-center gap-4 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input placeholder="Search contracts..." className="pl-10 bg-white border-slate-200" />
+                <Input placeholder="Search contracts..." className="pl-10 bg-white border-slate-200 rounded-xl" />
               </div>
-              <Button variant="outline" className="border-slate-200">Filter</Button>
+              <Button variant="outline" className="border-slate-200 rounded-xl">Filter</Button>
             </div>
 
             {contracts.map((contract) => (
-              <Card key={contract.id} className="border-none shadow-sm hover:shadow-md transition-shadow">
+              <Card key={contract.id} className="border-none shadow-sm hover:shadow-md transition-shadow rounded-2xl overflow-hidden">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -141,5 +182,4 @@ const Contracts = () => {
   );
 };
 
-import { cn } from "@/lib/utils";
 export default Contracts;
