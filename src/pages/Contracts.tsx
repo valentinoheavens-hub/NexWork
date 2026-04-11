@@ -13,14 +13,15 @@ import {
   Search, 
   Plus, 
   MoreVertical,
-  History,
   ArrowRight,
-  Loader2
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { supabase } from "@/lib/supabase";
+import { generateContract } from "@/lib/ai";
 
 const Contracts = () => {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ const Contracts = () => {
   const [serviceType, setServiceType] = useState("Design Services");
   const [contracts, setContracts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const hasApiKey = Boolean(import.meta.env.VITE_ANTHROPIC_API_KEY);
 
   useEffect(() => {
     fetchContracts();
@@ -52,24 +54,25 @@ const Contracts = () => {
 
   const handleGenerate = async () => {
     if (!description) return;
+    if (!hasApiKey) {
+      showError("Please add VITE_ANTHROPIC_API_KEY to your environment variables.");
+      return;
+    }
+
     setIsGenerating(true);
     
     try {
-      // In a production app, you would call a Supabase Edge Function here 
-      // that securely communicates with the Claude API using your API key.
-      // For now, we'll simulate the AI response and save the draft.
-      
-      const mockTitle = `${serviceType} - ${new Date().toLocaleDateString()}`;
-      const mockContent = `# ${serviceType.toUpperCase()} AGREEMENT\n\nBased on your scope: ${description}\n\n## 1. Scope of Work\n... (AI Generated Content) ...`;
+      const aiContent = await generateContract(description, serviceType);
+      const title = `${serviceType} - ${new Date().toLocaleDateString()}`;
 
       const { data, error } = await supabase
         .from('contracts')
         .insert([
           { 
-            title: mockTitle, 
+            title, 
             client: "New Client", 
             status: "Draft", 
-            content: mockContent,
+            content: aiContent,
             service_type: serviceType,
             value: "$0.00"
           }
@@ -78,11 +81,10 @@ const Contracts = () => {
 
       if (error) throw error;
 
-      showSuccess("AI Draft Generated and saved to database!");
+      showSuccess("AI Contract Generated!");
       navigate(`/contract/edit/${data[0].id}`);
-    } catch (err) {
-      showError("Failed to generate contract.");
-      console.error(err);
+    } catch (err: any) {
+      showError(err.message || "Failed to generate contract.");
     } finally {
       setIsGenerating(false);
     }
@@ -94,13 +96,22 @@ const Contracts = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Contracts</h1>
-            <p className="text-slate-50">Manage agreements and generate new ones with AI.</p>
+            <p className="text-slate-500">Manage agreements and generate new ones with Claude AI.</p>
           </div>
           <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
             <Plus className="w-4 h-4" />
             New Contract
           </Button>
         </div>
+
+        {!hasApiKey && (
+          <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl flex gap-3 items-center">
+            <AlertCircle className="w-5 h-5 text-amber-600" />
+            <p className="text-sm text-amber-800">
+              <strong>Claude is not connected.</strong> Please add your <code>VITE_ANTHROPIC_API_KEY</code> to the environment variables to enable AI generation.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <Card className="lg:col-span-1 border-none shadow-sm bg-indigo-50 border-indigo-100 relative overflow-hidden">
@@ -109,9 +120,9 @@ const Contracts = () => {
                 <Sparkles className="w-5 h-5" />
                 <span className="text-xs font-bold uppercase tracking-wider">AI Contract Builder</span>
               </div>
-              <CardTitle className="text-lg font-bold">Generate from Scope</CardTitle>
+              <CardTitle className="text-lg font-bold">Generate with Claude</CardTitle>
               <CardDescription>
-                Describe your project scope and our AI will draft a professional contract.
+                Describe your project scope and Claude will draft a professional contract.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 relative z-10">
@@ -139,12 +150,12 @@ const Contracts = () => {
               <Button 
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-6 rounded-xl font-bold group"
                 onClick={handleGenerate}
-                disabled={isGenerating || !description}
+                disabled={isGenerating || !description || !hasApiKey}
               >
                 {isGenerating ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    AI is Drafting...
+                    Claude is Drafting...
                   </>
                 ) : (
                   <>

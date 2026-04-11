@@ -15,11 +15,13 @@ import {
   Italic,
   List,
   Type,
-  Loader2
+  Loader2,
+  Sparkles
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabase";
 import { showSuccess, showError } from "@/utils/toast";
+import { suggestClause } from "@/lib/ai";
 
 const ContractEditor = () => {
   const navigate = useNavigate();
@@ -28,6 +30,8 @@ const ContractEditor = () => {
   const [title, setTitle] = useState("Loading...");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const hasApiKey = Boolean(import.meta.env.VITE_ANTHROPIC_API_KEY);
 
   useEffect(() => {
     if (contractId) fetchContract();
@@ -66,6 +70,23 @@ const ContractEditor = () => {
       showError("Failed to save.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAISuggestion = async () => {
+    if (!hasApiKey) {
+      showError("Claude API key missing.");
+      return;
+    }
+    setIsSuggesting(true);
+    try {
+      const suggestion = await suggestClause(content, "Intellectual Property");
+      setContent(prev => prev + "\n\n" + suggestion);
+      showSuccess("Clause added by Claude!");
+    } catch (err) {
+      showError("AI suggestion failed.");
+    } finally {
+      setIsSuggesting(false);
     }
   };
 
@@ -117,12 +138,19 @@ const ContractEditor = () => {
           <div className="space-y-6">
             <Card className="border-none shadow-sm bg-indigo-50 border-indigo-100">
               <CardContent className="p-6">
-                <h4 className="font-bold text-indigo-900 mb-2">AI Assistant</h4>
+                <div className="flex items-center gap-2 text-indigo-600 mb-2">
+                  <Sparkles className="w-4 h-4" />
+                  <h4 className="font-bold">Claude Assistant</h4>
+                </div>
                 <p className="text-sm text-indigo-700 mb-4">
-                  I've reviewed your contract. Would you like me to add a standard "Intellectual Property" clause?
+                  I can help you refine this contract. Would you like me to add a standard "Intellectual Property" clause?
                 </p>
-                <Button className="w-full bg-indigo-600 text-white hover:bg-indigo-700 border-none">
-                  Add Clause
+                <Button 
+                  className="w-full bg-indigo-600 text-white hover:bg-indigo-700 border-none"
+                  onClick={handleAISuggestion}
+                  disabled={isSuggesting || !hasApiKey}
+                >
+                  {isSuggesting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add Clause with Claude"}
                 </Button>
               </CardContent>
             </Card>
