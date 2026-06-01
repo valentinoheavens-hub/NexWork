@@ -3,25 +3,23 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  ChevronLeft, 
-  Save, 
-  Send, 
-  Download, 
-  Eye,
+import {
+  ChevronLeft,
+  Save,
+  Send,
   Bold,
   Italic,
   List,
   Type,
   Loader2,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/lib/supabase";
 import { showSuccess, showError } from "@/utils/toast";
 import { suggestClause } from "@/lib/ai";
+import { contractStore } from "@/lib/contractStore";
 
 const ContractEditor = () => {
   const navigate = useNavigate();
@@ -34,39 +32,25 @@ const ContractEditor = () => {
   const hasApiKey = Boolean(import.meta.env.VITE_GROQ_API_KEY);
 
   useEffect(() => {
-    if (contractId) fetchContract();
+    if (!contractId) return;
+    const contract = contractStore.getById(contractId);
+    if (!contract) {
+      showError("Contract not found.");
+      navigate("/contracts");
+      return;
+    }
+    setContent(contract.content || "");
+    setTitle(contract.title);
+    setLoading(false);
   }, [contractId]);
 
-  const fetchContract = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('contracts')
-        .select('*')
-        .eq('id', contractId)
-        .single();
-      
-      if (error) throw error;
-      setContent(data.content || "");
-      setTitle(data.title);
-    } catch (err) {
-      showError("Could not load contract.");
-      navigate("/contracts");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSave = async () => {
+    if (!contractId) return;
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('contracts')
-        .update({ content })
-        .eq('id', contractId);
-      
-      if (error) throw error;
-      showSuccess("Contract saved successfully!");
-    } catch (err) {
+      contractStore.update(contractId, { content });
+      showSuccess("Contract saved!");
+    } catch {
       showError("Failed to save.");
     } finally {
       setSaving(false);
@@ -81,20 +65,28 @@ const ContractEditor = () => {
     setIsSuggesting(true);
     try {
       const suggestion = await suggestClause(content, "Intellectual Property");
-      setContent(prev => prev + "\n\n" + suggestion);
+      setContent((prev) => prev + "\n\n" + suggestion);
       showSuccess("Clause added by NexWork AI!");
-    } catch (err) {
-      showError("AI suggestion failed.");
+    } catch {
+      showError("AI suggestion failed. Please try again.");
     } finally {
       setIsSuggesting(false);
     }
   };
 
-  if (loading) return <DashboardLayout><div className="flex justify-center py-20"><Loader2 className="animate-spin" /></div></DashboardLayout>;
+  if (loading)
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center py-20">
+          <Loader2 className="animate-spin text-indigo-600 w-8 h-8" />
+        </div>
+      </DashboardLayout>
+    );
 
   return (
     <DashboardLayout>
       <div className="space-y-8">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate("/contracts")}>
@@ -117,6 +109,7 @@ const ContractEditor = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Editor */}
           <div className="lg:col-span-3">
             <Card className="border-none shadow-sm min-h-[800px]">
               <div className="border-b border-slate-100 p-2 flex gap-1">
@@ -126,17 +119,19 @@ const ContractEditor = () => {
                 <Button variant="ghost" size="icon" className="h-8 w-8"><Type className="w-4 h-4" /></Button>
               </div>
               <CardContent className="p-8">
-                <Textarea 
+                <Textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   className="min-h-[700px] border-none focus-visible:ring-0 text-lg leading-relaxed font-serif resize-none"
+                  placeholder="Your contract content will appear here..."
                 />
               </CardContent>
             </Card>
           </div>
 
+          {/* AI Sidebar */}
           <div className="space-y-6">
-            <Card className="border-none shadow-sm bg-indigo-50 border-indigo-100">
+            <Card className="border-none shadow-sm bg-indigo-50">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 text-indigo-600 mb-2">
                   <Sparkles className="w-4 h-4" />
@@ -145,13 +140,35 @@ const ContractEditor = () => {
                 <p className="text-sm text-indigo-700 mb-4">
                   NexWork AI can help you refine this contract. Click below to add a standard "Intellectual Property" clause.
                 </p>
-                <Button 
+                <Button
                   className="w-full bg-indigo-600 text-white hover:bg-indigo-700 border-none"
                   onClick={handleAISuggestion}
                   disabled={isSuggesting || !hasApiKey}
                 >
-                  {isSuggesting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add Clause with NexWork AI"}
+                  {isSuggesting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Add Clause with NexWork AI"
+                  )}
                 </Button>
+              </CardContent>
+            </Card>
+
+            {/* Contract Tips */}
+            <Card className="border-none shadow-sm">
+              <CardContent className="p-6 space-y-3">
+                <h4 className="font-bold text-slate-900 text-sm">Quick Tips</h4>
+                {[
+                  "Always specify payment milestones clearly",
+                  "Include a revision limit clause",
+                  "Define project completion criteria",
+                  "Add a late payment penalty clause",
+                ].map((tip, i) => (
+                  <p key={i} className="text-xs text-slate-500 flex gap-2">
+                    <span className="text-indigo-400 font-bold shrink-0">→</span>
+                    {tip}
+                  </p>
+                ))}
               </CardContent>
             </Card>
           </div>

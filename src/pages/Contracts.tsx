@@ -7,11 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Sparkles, 
-  FileText, 
-  Search, 
-  Plus, 
+import {
+  Sparkles,
+  FileText,
+  Search,
+  Plus,
   MoreVertical,
   ArrowRight,
   Loader2,
@@ -20,71 +20,53 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
-import { supabase } from "@/lib/supabase";
 import { generateContract } from "@/lib/ai";
+import { contractStore, Contract } from "@/lib/contractStore";
 
 const Contracts = () => {
   const navigate = useNavigate();
   const [isGenerating, setIsGenerating] = useState(false);
   const [description, setDescription] = useState("");
   const [serviceType, setServiceType] = useState("Design Services");
-  const [contracts, setContracts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const hasApiKey = Boolean(import.meta.env.VITE_GROQ_API_KEY);
 
   useEffect(() => {
-    fetchContracts();
+    setContracts(contractStore.getAll());
   }, []);
 
-  const fetchContracts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('contracts')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      setContracts(data || []);
-    } catch (err) {
-      console.error("Error fetching contracts:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredContracts = contracts.filter(
+    (c) =>
+      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.client.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleGenerate = async () => {
-    if (!description) return;
+    if (!description.trim()) return;
     if (!hasApiKey) {
       showError("NexWork AI is not configured. Please check your environment setup.");
       return;
     }
 
     setIsGenerating(true);
-    
     try {
       const aiContent = await generateContract(description, serviceType);
-      const title = `${serviceType} - ${new Date().toLocaleDateString()}`;
+      const title = `${serviceType} — ${new Date().toLocaleDateString()}`;
 
-      const { data, error } = await supabase
-        .from('contracts')
-        .insert([
-          { 
-            title, 
-            client: "New Client", 
-            status: "Draft", 
-            content: aiContent,
-            service_type: serviceType,
-            value: "$0.00"
-          }
-        ])
-        .select();
+      const contract = contractStore.create({
+        title,
+        client: "New Client",
+        status: "Draft",
+        content: aiContent,
+        service_type: serviceType,
+        value: "$0.00",
+      });
 
-      if (error) throw error;
-
-      showSuccess("AI Contract Generated!");
-      navigate(`/contract/edit/${data[0].id}`);
+      showSuccess("Contract drafted by NexWork AI!");
+      navigate(`/contract/edit/${contract.id}`);
     } catch (err: any) {
-      showError(err.message || "Failed to generate contract.");
+      showError(err.message || "Failed to generate contract. Please try again.");
     } finally {
       setIsGenerating(false);
     }
@@ -114,6 +96,7 @@ const Contracts = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* AI Builder Panel */}
           <Card className="lg:col-span-1 border-none shadow-sm bg-indigo-50 border-indigo-100 relative overflow-hidden">
             <CardHeader>
               <div className="flex items-center gap-2 text-indigo-600 mb-1">
@@ -128,16 +111,16 @@ const Contracts = () => {
             <CardContent className="space-y-4 relative z-10">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700">Project Description</label>
-                <Textarea 
+                <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="e.g. I'm designing a 5-page website for a law firm..."
+                  placeholder="e.g. I'm designing a 5-page website for a law firm, including logo and brand guidelines..."
                   className="min-h-[150px] bg-white border-slate-200 focus:ring-indigo-500 rounded-xl"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700">Service Type</label>
-                <select 
+                <select
                   value={serviceType}
                   onChange={(e) => setServiceType(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -145,12 +128,15 @@ const Contracts = () => {
                   <option>Design Services</option>
                   <option>Software Development</option>
                   <option>Consulting</option>
+                  <option>Marketing & Strategy</option>
+                  <option>Content Creation</option>
+                  <option>Photography & Video</option>
                 </select>
               </div>
-              <Button 
+              <Button
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-6 rounded-xl font-bold group"
                 onClick={handleGenerate}
-                disabled={isGenerating || !description || !hasApiKey}
+                disabled={isGenerating || !description.trim() || !hasApiKey}
               >
                 {isGenerating ? (
                   <>
@@ -167,23 +153,35 @@ const Contracts = () => {
             </CardContent>
           </Card>
 
+          {/* Contract List */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-4 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input placeholder="Search contracts..." className="pl-10 bg-white border-slate-200 rounded-xl" />
+                <Input
+                  placeholder="Search contracts..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-white border-slate-200 rounded-xl"
+                />
               </div>
             </div>
 
-            {loading ? (
-              <div className="flex justify-center py-12"><Loader2 className="animate-spin text-indigo-600" /></div>
-            ) : contracts.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200">
-                <p className="text-slate-400">No contracts found. Generate your first one!</p>
+            {filteredContracts.length === 0 ? (
+              <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200">
+                <Sparkles className="w-10 h-10 text-indigo-200 mx-auto mb-3" />
+                <p className="text-slate-500 font-medium">No contracts yet</p>
+                <p className="text-slate-400 text-sm mt-1">
+                  {searchQuery ? "No results for that search." : "Describe your project and let NexWork AI draft your first contract."}
+                </p>
               </div>
             ) : (
-              contracts.map((contract) => (
-                <Card key={contract.id} className="border-none shadow-sm hover:shadow-md transition-shadow rounded-2xl overflow-hidden cursor-pointer" onClick={() => navigate(`/contract/edit/${contract.id}`)}>
+              filteredContracts.map((contract) => (
+                <Card
+                  key={contract.id}
+                  className="border-none shadow-sm hover:shadow-md transition-shadow rounded-2xl overflow-hidden cursor-pointer"
+                  onClick={() => navigate(`/contract/edit/${contract.id}`)}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
@@ -195,7 +193,9 @@ const Contracts = () => {
                         </div>
                         <div>
                           <h4 className="font-bold text-slate-900">{contract.title}</h4>
-                          <p className="text-sm text-slate-500">{contract.client} • {new Date(contract.created_at).toLocaleDateString()}</p>
+                          <p className="text-sm text-slate-500">
+                            {contract.client} · {new Date(contract.created_at).toLocaleDateString()}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-6">
@@ -208,7 +208,12 @@ const Contracts = () => {
                             {contract.status}
                           </Badge>
                         </div>
-                        <Button variant="ghost" size="icon" className="text-slate-400">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-slate-400"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <MoreVertical className="w-4 h-4" />
                         </Button>
                       </div>
