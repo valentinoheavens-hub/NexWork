@@ -31,7 +31,7 @@ const ContractEditor = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
-  const hasApiKey = Boolean(import.meta.env.VITE_ANTHROPIC_API_KEY);
+  const hasApiKey = Boolean(import.meta.env.VITE_GROQ_API_KEY);
 
   useEffect(() => {
     if (contractId) fetchContract();
@@ -75,14 +75,14 @@ const ContractEditor = () => {
 
   const handleAISuggestion = async () => {
     if (!hasApiKey) {
-      showError("Claude API key missing.");
+      showError("Groq API key missing. Add VITE_GROQ_API_KEY to your .env file.");
       return;
     }
     setIsSuggesting(true);
     try {
       const suggestion = await suggestClause(content, "Intellectual Property");
       setContent(prev => prev + "\n\n" + suggestion);
-      showSuccess("Clause added by Claude!");
+      showSuccess("Clause added by Groq AI!");
     } catch (err) {
       showError("AI suggestion failed.");
     } finally {
@@ -140,17 +140,17 @@ const ContractEditor = () => {
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 text-indigo-600 mb-2">
                   <Sparkles className="w-4 h-4" />
-                  <h4 className="font-bold">Claude Assistant</h4>
+                  <h4 className="font-bold">Groq AI Assistant</h4>
                 </div>
                 <p className="text-sm text-indigo-700 mb-4">
-                  I can help you refine this contract. Would you like me to add a standard "Intellectual Property" clause?
+                  Groq AI can help you refine this contract. Click below to add a standard "Intellectual Property" clause.
                 </p>
                 <Button 
                   className="w-full bg-indigo-600 text-white hover:bg-indigo-700 border-none"
                   onClick={handleAISuggestion}
                   disabled={isSuggesting || !hasApiKey}
                 >
-                  {isSuggesting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add Clause with Claude"}
+                  {isSuggesting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add Clause with Groq AI"}
                 </Button>
               </CardContent>
             </Card>
