@@ -34,6 +34,7 @@ import { generatePaymentReminder } from "@/lib/ai";
 import { sendInvoiceReminder } from "@/lib/email";
 import { showSuccess, showError } from "@/utils/toast";
 import { Input } from "@/components/ui/input";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface Payment {
   id: string;
@@ -83,6 +84,7 @@ const statusConfig = {
 };
 
 export default function Payments() {
+  const { format } = useCurrency();
   const [activeFilter, setActiveFilter] = useState<"all" | "overdue" | "pending" | "paid">("all");
   const [reminderPayment, setReminderPayment] = useState<Payment | null>(null);
   const [reminderText, setReminderText] = useState("");
@@ -153,7 +155,7 @@ export default function Payments() {
                 </span>
               </div>
               <p className="text-emerald-100 text-sm font-medium">Total Collected</p>
-              <h3 className="text-3xl font-black">${totalCollected.toLocaleString()}</h3>
+              <h3 className="text-3xl font-black">{format(totalCollected)}</h3>
             </CardContent>
           </Card>
           <Card className="border-none shadow-sm">
@@ -165,7 +167,7 @@ export default function Payments() {
                 <Badge className="bg-amber-50 text-amber-700 border-none">Awaited</Badge>
               </div>
               <p className="text-sm font-medium text-slate-500">Pending Payments</p>
-              <h3 className="text-2xl font-bold text-slate-900">${totalPending.toLocaleString()}</h3>
+              <h3 className="text-2xl font-bold text-slate-900">{format(totalPending)}</h3>
             </CardContent>
           </Card>
           <Card className="border-none shadow-sm">
@@ -177,7 +179,7 @@ export default function Payments() {
                 <Badge className="bg-rose-50 text-rose-700 border-none">Action needed</Badge>
               </div>
               <p className="text-sm font-medium text-slate-500">Overdue Amount</p>
-              <h3 className="text-2xl font-bold text-rose-600">${totalOverdue.toLocaleString()}</h3>
+              <h3 className="text-2xl font-bold text-rose-600">{format(totalOverdue)}</h3>
             </CardContent>
           </Card>
         </div>
@@ -248,7 +250,7 @@ export default function Payments() {
                     </div>
 
                     <div className="flex items-center gap-4 shrink-0">
-                      <span className="font-bold text-slate-900 text-sm">{payment.amount}</span>
+                      <span className="font-bold text-slate-900 text-sm">{format(payment.amountNum)}</span>
                       <Badge className={cn("border-none gap-1", cfg.color)}>
                         <StatusIcon className={cn("w-3 h-3", cfg.iconColor)} />
                         {cfg.label}
@@ -290,8 +292,8 @@ export default function Payments() {
           <CardContent>
             <div className="space-y-4">
               {[
-                { month: "October 2023", collected: "$9,300", pending: "$0", note: "2 invoices paid" },
-                { month: "November 2023", collected: "$0", pending: "$6,250", note: "2 invoices pending" },
+                { month: "October 2023", collected: format(9300), pending: format(0), note: "2 invoices paid" },
+                { month: "November 2023", collected: format(0), pending: format(6250), note: "2 invoices pending" },
               ].map((row) => (
                 <div key={row.month} className="flex items-center gap-4 p-4 rounded-xl bg-slate-50">
                   <div className="flex-1">

@@ -22,8 +22,10 @@ import {
   AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const Reports = () => {
+  const { format } = useCurrency();
   const revenueData = [
     { month: "Jan", revenue: 4500 },
     { month: "Feb", revenue: 5200 },
@@ -65,7 +67,7 @@ const Reports = () => {
                 </span>
               </div>
               <p className="text-sm font-medium text-slate-500">YTD Revenue</p>
-              <h3 className="text-2xl font-bold text-slate-900">$42,850.00</h3>
+              <h3 className="text-2xl font-bold text-slate-900">{format(42850)}</h3>
             </CardContent>
           </Card>
           <Card className="border-none shadow-sm">
@@ -76,7 +78,7 @@ const Reports = () => {
                 </div>
               </div>
               <p className="text-sm font-medium text-slate-500">Estimated Tax Liability</p>
-              <h3 className="text-2xl font-bold text-slate-900">$8,570.00</h3>
+              <h3 className="text-2xl font-bold text-slate-900">{format(8570)}</h3>
             </CardContent>
           </Card>
           <Card className="border-none shadow-sm">
@@ -87,7 +89,7 @@ const Reports = () => {
                 </div>
               </div>
               <p className="text-sm font-medium text-slate-500">Avg. Project Value</p>
-              <h3 className="text-2xl font-bold text-slate-900">$5,350.00</h3>
+              <h3 className="text-2xl font-bold text-slate-900">{format(5350)}</h3>
             </CardContent>
           </Card>
         </div>
@@ -125,14 +127,14 @@ const Reports = () => {
                     <ShieldCheck className="w-4 h-4 text-emerald-500" />
                     <span className="text-sm font-medium text-slate-700">VAT/GST Collected</span>
                   </div>
-                  <span className="font-bold text-slate-900">$3,420.00</span>
+                  <span className="font-bold text-slate-900">{format(3420)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 text-amber-500" />
                     <span className="text-sm font-medium text-slate-700">Deductible Expenses</span>
                   </div>
-                  <span className="font-bold text-slate-900">$1,250.00</span>
+                  <span className="font-bold text-slate-900">{format(1250)}</span>
                 </div>
               </div>
               <div className="space-y-2">

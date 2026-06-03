@@ -23,10 +23,20 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { sendTestEmail } from "@/lib/email";
+import { useCurrency } from "@/hooks/useCurrency";
+import { showSuccess } from "@/utils/toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Settings = () => {
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const { code: currencyCode, currencies, setCurrency, format } = useCurrency();
 
   const handleTestEmail = async () => {
     setIsSendingTest(true);
@@ -82,6 +92,35 @@ const Settings = () => {
                           <Input defaultValue="#4F46E5" className="flex-1" />
                           <div className="w-10 h-10 rounded-md bg-indigo-600 border border-slate-200" />
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Currency preference */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label>Default Currency</Label>
+                        <Select
+                          value={currencyCode}
+                          onValueChange={(val) => {
+                            setCurrency(val);
+                            showSuccess(`Currency changed to ${currencies.find(c => c.code === val)?.name ?? val}`);
+                          }}
+                        >
+                          <SelectTrigger className="h-10 border-slate-200">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {currencies.map((cur) => (
+                              <SelectItem key={cur.code} value={cur.code}>
+                                <span className="font-mono text-slate-500 mr-2 text-xs">{cur.symbol}</span>
+                                {cur.name} ({cur.code})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-slate-400">
+                          Preview: {format(1250)} · {format(49999)}
+                        </p>
                       </div>
                     </div>
 

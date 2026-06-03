@@ -24,18 +24,20 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { useCurrency } from "@/hooks/useCurrency";
 
 type InvoiceStatus = "All" | "Paid" | "Pending" | "Overdue" | "Draft";
 
 const Invoices = () => {
   const [activeFilter, setActiveFilter] = useState<InvoiceStatus>("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const { format } = useCurrency();
 
   const invoices = [
-    { id: "INV-001", client: "Acme Corp", amount: "$1,500.00", status: "Paid", date: "Oct 12, 2023", method: "Stripe" },
-    { id: "INV-002", client: "Global Tech", amount: "$3,200.00", status: "Overdue", date: "Oct 28, 2023", method: "Paystack" },
-    { id: "INV-003", client: "Zest Foods", amount: "$850.00", status: "Sent", date: "Nov 01, 2023", method: "Flutterwave" },
-    { id: "INV-004", client: "Acme Corp", amount: "$2,100.00", status: "Draft", date: "Nov 05, 2023", method: "-" },
+    { id: "INV-001", client: "Acme Corp", amount: format(1500), status: "Paid", date: "Oct 12, 2023", method: "Stripe" },
+    { id: "INV-002", client: "Global Tech", amount: format(3200), status: "Overdue", date: "Oct 28, 2023", method: "Paystack" },
+    { id: "INV-003", client: "Zest Foods", amount: format(850), status: "Sent", date: "Nov 01, 2023", method: "Flutterwave" },
+    { id: "INV-004", client: "Acme Corp", amount: format(2100), status: "Draft", date: "Nov 05, 2023", method: "-" },
   ];
 
   const filters: InvoiceStatus[] = ["All", "Paid", "Pending", "Overdue"];

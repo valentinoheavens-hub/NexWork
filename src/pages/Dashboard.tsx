@@ -1,4 +1,5 @@
 import React from "react";
+import { useCurrency } from "@/hooks/useCurrency";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -22,10 +23,12 @@ import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 
 const Dashboard = () => {
+  const { format } = useCurrency();
+
   const stats = [
-    { title: "Total Revenue", value: "$12,450", change: "+12.5%", icon: TrendingUp, color: "text-emerald-600" },
+    { title: "Total Revenue", value: format(12450), change: "+12.5%", icon: TrendingUp, color: "text-emerald-600" },
     { title: "Active Clients", value: "8", change: "+2", icon: Users, color: "text-blue-600" },
-    { title: "Pending Invoices", value: "$3,200", change: "4 total", icon: Clock, color: "text-amber-600" },
+    { title: "Pending Invoices", value: format(3200), change: "4 total", icon: Clock, color: "text-amber-600" },
     { title: "Scope Changes", value: "3", change: "Awaiting approval", icon: AlertCircle, color: "text-rose-600" },
   ];
 
