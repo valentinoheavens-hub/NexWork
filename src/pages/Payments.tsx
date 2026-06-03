@@ -31,7 +31,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { generatePaymentReminder } from "@/lib/ai";
+import { sendInvoiceReminder } from "@/lib/email";
 import { showSuccess, showError } from "@/utils/toast";
+import { Input } from "@/components/ui/input";
 
 interface Payment {
   id: string;
@@ -86,6 +88,8 @@ export default function Payments() {
   const [reminderText, setReminderText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [clientEmail, setClientEmail] = useState("");
+  const [isSending, setIsSending] = useState(false);
 
   const filtered = payments.filter(p => activeFilter === "all" || p.status === activeFilter);
 
@@ -96,6 +100,7 @@ export default function Payments() {
   const openReminder = (p: Payment) => {
     setReminderPayment(p);
     setReminderText("");
+    setClientEmail("");
   };
 
   const generateReminder = async () => {
@@ -358,6 +363,19 @@ export default function Payments() {
               </div>
             )}
 
+            {reminderText && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-slate-600">Client Email Address</label>
+                <Input
+                  type="email"
+                  placeholder="client@example.com"
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
+                  className="h-9 border-slate-200 focus-visible:ring-indigo-500 text-sm"
+                />
+              </div>
+            )}
+
             <div className="flex gap-3">
               <Button
                 variant="outline"
@@ -378,13 +396,29 @@ export default function Payments() {
               )}
               <Button
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
-                disabled={!reminderText}
-                onClick={() => {
-                  showSuccess("Reminder sent to " + reminderPayment?.client);
-                  setReminderPayment(null);
+                disabled={!reminderText || !clientEmail || isSending}
+                onClick={async () => {
+                  if (!reminderPayment || !clientEmail) return;
+                  setIsSending(true);
+                  const result = await sendInvoiceReminder({
+                    clientEmail,
+                    clientName: reminderPayment.client,
+                    invoiceId: reminderPayment.invoiceId,
+                    amount: reminderPayment.amount,
+                    dueDate: reminderPayment.dueDate,
+                    body: reminderText,
+                  });
+                  setIsSending(false);
+                  if (result.success) {
+                    showSuccess(`Reminder sent to ${reminderPayment.client}!`);
+                    setReminderPayment(null);
+                  } else {
+                    showError(result.error || "Failed to send email.");
+                  }
                 }}
               >
-                <Send className="w-4 h-4" /> Send
+                {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {isSending ? "Sending…" : "Send Email"}
               </Button>
             </div>
           </div>

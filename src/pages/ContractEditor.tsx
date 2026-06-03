@@ -20,6 +20,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { showSuccess, showError } from "@/utils/toast";
 import { suggestClause } from "@/lib/ai";
 import { contractStore } from "@/lib/contractStore";
+import { sendContractForSigning } from "@/lib/email";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const ContractEditor = () => {
   const navigate = useNavigate();
@@ -29,6 +38,9 @@ const ContractEditor = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
+  const [showSendDialog, setShowSendDialog] = useState(false);
+  const [sendEmail, setSendEmail] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const hasApiKey = Boolean(import.meta.env.VITE_GROQ_API_KEY);
 
   useEffect(() => {
@@ -54,6 +66,25 @@ const ContractEditor = () => {
       showError("Failed to save.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSendToClient = async () => {
+    if (!sendEmail) return;
+    setIsSending(true);
+    const result = await sendContractForSigning({
+      clientEmail: sendEmail,
+      clientName: sendEmail.split("@")[0],
+      contractTitle: title,
+      message: `Please review and sign the contract: "${title}". You can find the full document below.`,
+    });
+    setIsSending(false);
+    if (result.success) {
+      showSuccess("Contract sent to " + sendEmail + "!");
+      setShowSendDialog(false);
+      setSendEmail("");
+    } else {
+      showError(result.error || "Failed to send contract.");
     }
   };
 
@@ -102,7 +133,10 @@ const ContractEditor = () => {
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save Draft
             </Button>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+            <Button
+              className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+              onClick={() => setShowSendDialog(true)}
+            >
               <Send className="w-4 h-4" /> Send to Client
             </Button>
           </div>
@@ -174,6 +208,49 @@ const ContractEditor = () => {
           </div>
         </div>
       </div>
+
+      {/* Send to Client Dialog */}
+      <Dialog open={showSendDialog} onOpenChange={setShowSendDialog}>
+        <DialogContent className="sm:max-w-[440px] rounded-3xl border-none shadow-2xl">
+          <DialogHeader>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center">
+                <Send className="w-4 h-4 text-indigo-600" />
+              </div>
+              <DialogTitle className="text-lg font-bold">Send Contract to Client</DialogTitle>
+            </div>
+            <DialogDescription>
+              Enter the client's email address. They'll receive the contract <strong>{title}</strong> for review and signing.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Client Email</label>
+              <Input
+                type="email"
+                placeholder="client@example.com"
+                value={sendEmail}
+                onChange={(e) => setSendEmail(e.target.value)}
+                className="h-10 border-slate-200 focus-visible:ring-indigo-500"
+                onKeyDown={(e) => e.key === "Enter" && handleSendToClient()}
+              />
+            </div>
+            <div className="flex gap-3 pt-1">
+              <Button variant="outline" className="flex-1" onClick={() => setShowSendDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+                onClick={handleSendToClient}
+                disabled={!sendEmail || isSending}
+              >
+                {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {isSending ? "Sending…" : "Send"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
