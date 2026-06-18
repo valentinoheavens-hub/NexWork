@@ -236,9 +236,33 @@ const PLANS = [
   },
 ];
 
+const BASE_PRICE_USD = 29;
+
 const Index = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { format, currency } = useCurrency();
+  const [rates, setRates] = useState<Record<string, number> | null>(null);
+
+  React.useEffect(() => {
+    fetch('https://open.er-api.com/v6/latest/USD')
+      .then((r) => r.json())
+      .then((data) => { if (data?.rates) setRates(data.rates); })
+      .catch(() => {}); // silently fall back to raw USD display
+  }, []);
+
+  const agencyPrice = (() => {
+    if (currency.code === 'USD' || !rates) return format(BASE_PRICE_USD);
+    const rate = rates[currency.code];
+    if (!rate) return `$${BASE_PRICE_USD}`;
+    // Round to a locally sensible number
+    const converted = BASE_PRICE_USD * rate;
+    const rounded = converted < 100
+      ? Math.round(converted * 10) / 10          // e.g. €27.2
+      : converted < 1000
+      ? Math.round(converted / 5) * 5            // e.g. ₵360
+      : Math.round(converted / 100) * 100;       // e.g. ₦49,300 → ₦49,300
+    return format(rounded);
+  })();
 
   return (
     <div className="min-h-screen bg-white selection:bg-indigo-100 overflow-x-hidden">
@@ -496,7 +520,7 @@ const Index = () => {
                       ? "Custom"
                       : plan.priceUSD === 0
                       ? "Free"
-                      : format(plan.priceUSD)}
+                      : agencyPrice}
                   </span>
                   <span className={cn("text-sm mb-2", plan.highlight ? "text-indigo-200" : "text-slate-400")}>
                     {plan.priceUSD !== null && plan.priceUSD > 0 && `/${plan.period}`}
@@ -504,7 +528,7 @@ const Index = () => {
                 </div>
                 {plan.priceUSD !== null && plan.priceUSD > 0 && currency.code !== "USD" && (
                   <p className={cn("text-xs mb-6", plan.highlight ? "text-indigo-300" : "text-slate-400")}>
-                    ~USD $29/mo · billed in USD
+                    ≈ USD $29/mo · billed in USD
                   </p>
                 )}
                 {!(plan.priceUSD !== null && plan.priceUSD > 0 && currency.code !== "USD") && (
