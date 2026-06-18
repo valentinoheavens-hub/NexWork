@@ -313,6 +313,7 @@ const InvoiceBuilder = () => {
                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
                     <option>Paystack</option>
+                    <option>Flutterwave</option>
                     <option>Bank Transfer</option>
                     <option>Cash</option>
                     <option>Other</option>

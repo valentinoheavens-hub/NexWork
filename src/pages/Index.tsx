@@ -125,8 +125,8 @@ const FEATURES = [
   {
     icon: CreditCard,
     color: "bg-amber-500",
-    title: "Paystack + Stripe Payments",
-    desc: "Accept card payments via Stripe globally or Paystack for Africa. Clients pay directly from their portal — no chasing invoices.",
+    title: "Paystack, Flutterwave & Stripe",
+    desc: "Accept card payments via Stripe globally, or Paystack and Flutterwave for Africa — including mobile money and USSD. Clients pay directly from their portal.",
   },
   {
     icon: Bell,
@@ -156,7 +156,7 @@ const STEPS = [
   {
     n: "03",
     title: "Get paid automatically",
-    desc: "Send an invoice from the dashboard. The client pays via Stripe or Paystack. The invoice auto-marks as Paid. You get a notification.",
+    desc: "Send an invoice from the dashboard. The client pays via Stripe, Paystack, or Flutterwave. The invoice auto-marks as Paid. You get a notification.",
   },
 ];
 
@@ -176,7 +176,7 @@ const TESTIMONIALS = [
     color: "bg-indigo-100 text-indigo-700",
   },
   {
-    quote: "Finally a tool that understands Paystack. My Nigerian clients can pay with a card and I don't have to do anything.",
+    quote: "Finally a tool that understands Paystack and Flutterwave. My Nigerian clients can pay by card, mobile money, or USSD and I don't have to do anything.",
     name: "Kevin Mwangi",
     role: "Web Developer, Nairobi",
     initials: "KM",
@@ -196,7 +196,7 @@ const PLANS = [
       "Up to 3 active clients",
       "Client portals",
       "AI contract builder (5/mo)",
-      "Paystack + Stripe payments",
+      "Paystack, Flutterwave + Stripe",
       "Basic project tracking",
     ],
   },
@@ -620,6 +620,7 @@ const Index = () => {
                 <ul className="space-y-2 text-slate-500">
                   <li><span>Stripe</span></li>
                   <li><span>Paystack</span></li>
+                  <li><span>Flutterwave</span></li>
                   <li><span>55+ currencies</span></li>
                 </ul>
               </div>
