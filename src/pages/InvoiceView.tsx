@@ -27,6 +27,7 @@ declare global {
     PaystackPop: {
       setup: (opts: Record<string, unknown>) => { openIframe: () => void };
     };
+    FlutterwaveCheckout: (opts: Record<string, unknown>) => void;
   }
 }
 
@@ -49,19 +50,28 @@ const InvoiceView = () => {
   const [clientEmail, setClientEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
+  const [payingFlutterwave, setPayingFlutterwave] = useState(false);
   const [payingStripe, setPayingStripe] = useState(false);
 
   const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY as string | undefined;
+  const flutterwaveKey = import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY as string | undefined;
   const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY as string | undefined;
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-  // Inject Paystack script once
+  // Inject payment scripts once
   useEffect(() => {
     if (!document.getElementById("paystack-js")) {
       const s = document.createElement("script");
       s.id = "paystack-js";
       s.src = "https://js.paystack.co/v1/inline.js";
+      s.async = true;
+      document.body.appendChild(s);
+    }
+    if (!document.getElementById("flutterwave-js")) {
+      const s = document.createElement("script");
+      s.id = "flutterwave-js";
+      s.src = "https://checkout.flutterwave.com/v3.js";
       s.async = true;
       document.body.appendChild(s);
     }
@@ -137,6 +147,56 @@ const InvoiceView = () => {
     });
 
     handler.openIframe();
+  };
+
+  const handleFlutterwavePayment = () => {
+    if (!invoice) return;
+    if (!flutterwaveKey) {
+      showError("Flutterwave not configured. Add VITE_FLUTTERWAVE_PUBLIC_KEY to your environment.");
+      return;
+    }
+    if (!clientEmail) {
+      showError("Please enter your email address to continue.");
+      return;
+    }
+
+    setPayingFlutterwave(true);
+    const txRef = `NEX-FLW-${invoice.invoice_number}-${Date.now()}`;
+
+    window.FlutterwaveCheckout({
+      public_key: flutterwaveKey,
+      tx_ref: txRef,
+      amount: invoice.amount, // Flutterwave uses major currency unit (not kobo)
+      currency: getPaymentCurrency(currencyCode),
+      payment_options: "card,mobilemoney,ussd,banktransfer",
+      customer: {
+        email: clientEmail,
+        name: invoice.client_name,
+      },
+      customizations: {
+        title: "NexWork Invoice",
+        description: `Payment for Invoice #${invoice.invoice_number}`,
+        logo: `${window.location.origin}/favicon.svg`,
+      },
+      callback: async (data: { status: string; transaction_id: number; tx_ref: string }) => {
+        if (data.status === "successful" || data.status === "completed") {
+          const updated = await invoiceStore.update(invoice.id, {
+            status: "Paid",
+            paystack_reference: String(data.transaction_id),
+            paid_at: new Date().toISOString(),
+            payment_method: "Flutterwave",
+          });
+          if (updated) {
+            setInvoice(updated);
+            showSuccess("Payment successful! Invoice marked as paid.");
+          }
+        } else {
+          showError("Payment was not completed. Please try again.");
+        }
+        setPayingFlutterwave(false);
+      },
+      onclose: () => setPayingFlutterwave(false),
+    });
   };
 
   const handleStripeCheckout = async () => {
@@ -245,7 +305,7 @@ const InvoiceView = () => {
                   onChange={(e) => setClientEmail(e.target.value)}
                   className="h-10 bg-white border-slate-200 w-full sm:max-w-xs"
                 />
-                <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex gap-2 w-full sm:w-auto flex-wrap">
                   {paystackKey && (
                     <Button
                       onClick={handlePay}
@@ -259,6 +319,19 @@ const InvoiceView = () => {
                       Paystack
                     </Button>
                   )}
+                  {flutterwaveKey && (
+                    <Button
+                      onClick={handleFlutterwavePayment}
+                      disabled={payingFlutterwave || !clientEmail}
+                      variant="outline"
+                      className="gap-2 whitespace-nowrap border-orange-200 text-orange-600 hover:bg-orange-50 flex-1 sm:flex-none"
+                    >
+                      {payingFlutterwave
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : <CreditCard className="w-4 h-4" />}
+                      Flutterwave
+                    </Button>
+                  )}
                   <Button
                     onClick={handleStripeCheckout}
                     disabled={payingStripe || !clientEmail}
@@ -268,7 +341,7 @@ const InvoiceView = () => {
                     {payingStripe
                       ? <Loader2 className="w-4 h-4 animate-spin" />
                       : <ExternalLink className="w-4 h-4" />}
-                    Pay with Stripe
+                    Stripe
                   </Button>
                 </div>
               </div>
