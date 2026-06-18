@@ -9,6 +9,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import SignIn from "./pages/SignIn";
+import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import BusinessDiagnostics from "./pages/BusinessDiagnostics";
 import StrategicPlanning from "./pages/StrategicPlanning";
@@ -67,6 +68,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/login" element={<SignIn />} />
+            <Route path="/onboarding" element={<P el={<Onboarding />} />} />
             <Route path="/portal/:clientId" element={<ClientPortal />} />
             <Route path="/onboarding/:token" element={<ClientOnboarding />} />
             <Route path="/invoice/view/:invoiceId" element={<InvoiceView />} />
