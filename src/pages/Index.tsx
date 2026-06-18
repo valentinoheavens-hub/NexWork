@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useCurrency } from "@/hooks/useCurrency";
 import {
   ArrowRight,
   Shield,
@@ -138,7 +139,7 @@ const FEATURES = [
     icon: BarChart3,
     color: "bg-violet-500",
     title: "Revenue & Health Reports",
-    desc: "Track revenue, project health, overdue invoices, and tax summaries. 14 currencies supported including NGN, GHS, KES, and ZAR.",
+    desc: "Track revenue, project health, overdue invoices, and tax summaries. 55+ currencies supported including NGN, GHS, KES, and ZAR.",
   },
 ];
 
@@ -187,7 +188,7 @@ const TESTIMONIALS = [
 const PLANS = [
   {
     name: "Freelancer",
-    price: "$0",
+    priceUSD: 0,
     period: "forever",
     desc: "Perfect for solo freelancers just getting started.",
     cta: "Start Free",
@@ -202,7 +203,7 @@ const PLANS = [
   },
   {
     name: "Agency",
-    price: "$29",
+    priceUSD: 29,
     period: "per month",
     desc: "For growing agencies managing multiple clients.",
     cta: "Start Free Trial",
@@ -213,13 +214,13 @@ const PLANS = [
       "Unlimited AI contracts",
       "Real-time notifications",
       "Advanced reports",
-      "Multi-currency (14 currencies)",
+      "Multi-currency (55+ currencies)",
       "Scope change orders",
     ],
   },
   {
     name: "Enterprise",
-    price: "Custom",
+    priceUSD: null,
     period: "contact us",
     desc: "For large agencies needing custom integrations.",
     cta: "Contact Sales",
@@ -237,6 +238,7 @@ const PLANS = [
 
 const Index = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { format, currency } = useCurrency();
 
   return (
     <div className="min-h-screen bg-white selection:bg-indigo-100 overflow-x-hidden">
@@ -324,8 +326,8 @@ const Index = () => {
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-slate-500">
             {[
               { val: "500+", label: "agencies using NexWork" },
-              { val: "14", label: "currencies supported" },
-              { val: "$0", label: "to get started" },
+              { val: "55+", label: "currencies supported" },
+              { val: "Free", label: "to get started" },
               { val: "2 min", label: "to onboard" },
             ].map((s) => (
               <div key={s.label} className="flex items-center gap-2">
@@ -488,14 +490,26 @@ const Index = () => {
                 <p className={cn("text-sm mb-6", plan.highlight ? "text-indigo-200" : "text-slate-500")}>
                   {plan.desc}
                 </p>
-                <div className="flex items-end gap-1 mb-8">
+                <div className="flex items-end gap-1 mb-2">
                   <span className={cn("text-5xl font-black", plan.highlight ? "text-white" : "text-slate-900")}>
-                    {plan.price}
+                    {plan.priceUSD === null
+                      ? "Custom"
+                      : plan.priceUSD === 0
+                      ? "Free"
+                      : format(plan.priceUSD)}
                   </span>
                   <span className={cn("text-sm mb-2", plan.highlight ? "text-indigo-200" : "text-slate-400")}>
-                    /{plan.period}
+                    {plan.priceUSD !== null && plan.priceUSD > 0 && `/${plan.period}`}
                   </span>
                 </div>
+                {plan.priceUSD !== null && plan.priceUSD > 0 && currency.code !== "USD" && (
+                  <p className={cn("text-xs mb-6", plan.highlight ? "text-indigo-300" : "text-slate-400")}>
+                    ~USD $29/mo · billed in USD
+                  </p>
+                )}
+                {!(plan.priceUSD !== null && plan.priceUSD > 0 && currency.code !== "USD") && (
+                  <div className="mb-6" />
+                )}
                 <Link to="/signin">
                   <Button className={cn(
                     "w-full rounded-xl mb-8 h-11",
@@ -583,7 +597,7 @@ const Index = () => {
                 <ul className="space-y-2 text-slate-500">
                   <li><span>Stripe</span></li>
                   <li><span>Paystack</span></li>
-                  <li><span>14 currencies</span></li>
+                  <li><span>55+ currencies</span></li>
                 </ul>
               </div>
             </div>
