@@ -1,66 +1,227 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { 
-  ChevronLeft, 
-  Download, 
-  Printer, 
-  Share2, 
-  CreditCard,
-  CheckCircle2
-} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  ChevronLeft,
+  Download,
+  Printer,
+  CreditCard,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useCurrency } from "@/hooks/useCurrency";
+import { showSuccess, showError } from "@/utils/toast";
+import { invoiceStore, Invoice } from "@/lib/invoiceStore";
+import { clientStore } from "@/lib/clientStore";
+
+declare global {
+  interface Window {
+    PaystackPop: {
+      setup: (opts: Record<string, unknown>) => { openIframe: () => void };
+    };
+  }
+}
+
+const statusBadge = (status: string) =>
+  cn(
+    "border-none px-4 py-1 text-sm",
+    status === "Paid" ? "bg-emerald-50 text-emerald-700" :
+    status === "Overdue" ? "bg-rose-50 text-rose-700" :
+    status === "Sent" ? "bg-blue-50 text-blue-700" :
+    "bg-slate-100 text-slate-600"
+  );
 
 const InvoiceView = () => {
   const { invoiceId } = useParams();
   const navigate = useNavigate();
+  const { format } = useCurrency();
 
-  const invoice = {
-    id: "INV-2023-001",
-    status: "Paid",
-    date: "Oct 12, 2023",
-    dueDate: "Oct 26, 2023",
-    client: {
-      name: "Acme Corp",
-      address: "456 Corporate Blvd, San Francisco, CA",
-      email: "billing@acme.com"
-    },
-    items: [
-      { description: "Brand Identity Discovery Phase", qty: 1, rate: 1500, amount: 1500 },
-      { description: "Initial Logo Concepts", qty: 1, rate: 2000, amount: 2000 },
-    ],
-    subtotal: 3500,
-    tax: 0,
-    total: 3500
+  const [invoice, setInvoice] = useState<Invoice | null>(null);
+  const [clientEmail, setClientEmail] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [paying, setPaying] = useState(false);
+
+  const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY as string | undefined;
+
+  // Inject Paystack script once
+  useEffect(() => {
+    if (!document.getElementById("paystack-js")) {
+      const s = document.createElement("script");
+      s.id = "paystack-js";
+      s.src = "https://js.paystack.co/v1/inline.js";
+      s.async = true;
+      document.body.appendChild(s);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!invoiceId) return;
+    invoiceStore.getById(invoiceId).then(async (inv) => {
+      if (!inv) { setLoading(false); return; }
+      setInvoice(inv);
+      if (inv.client_id) {
+        const client = await clientStore.getById(inv.client_id);
+        if (client?.email) setClientEmail(client.email);
+      }
+      setLoading(false);
+    });
+  }, [invoiceId]);
+
+  const handlePay = () => {
+    if (!invoice) return;
+    if (!paystackKey) {
+      showError("Payment not configured. Add VITE_PAYSTACK_PUBLIC_KEY to your environment.");
+      return;
+    }
+    if (!clientEmail) {
+      showError("Please enter your email address to continue.");
+      return;
+    }
+
+    setPaying(true);
+    const ref = `NEX-${invoice.invoice_number}-${Date.now()}`;
+
+    const handler = window.PaystackPop.setup({
+      key: paystackKey,
+      email: clientEmail,
+      amount: Math.round(invoice.amount * 100), // kobo / pesewas
+      currency: "NGN",
+      ref,
+      metadata: {
+        invoice_id: invoice.id,
+        invoice_number: invoice.invoice_number,
+        client_name: invoice.client_name,
+      },
+      callback: async (response: { reference: string }) => {
+        const updated = await invoiceStore.update(invoice.id, {
+          status: "Paid",
+          paystack_reference: response.reference,
+          paid_at: new Date().toISOString(),
+          payment_method: "Paystack",
+        });
+        if (updated) {
+          setInvoice(updated);
+          showSuccess("Payment successful! Invoice marked as paid.");
+        }
+        setPaying(false);
+      },
+      onClose: () => setPaying(false),
+    });
+
+    handler.openIframe();
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
+
+  if (!invoice) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center text-center">
+        <div>
+          <p className="text-slate-500 mb-4">Invoice not found.</p>
+          <Button onClick={() => navigate("/invoices")}>Back to Invoices</Button>
+        </div>
+      </div>
+    );
+  }
+
+  const items: Array<{ description: string; quantity: number; rate: number; amount: number }> =
+    Array.isArray(invoice.items) ? invoice.items : [];
+  const subtotal = items.reduce((s, i) => s + (i.amount ?? i.quantity * i.rate), 0) || invoice.amount;
+  const isPaid = invoice.status === "Paid";
+  const canPay = !isPaid && (invoice.status === "Sent" || invoice.status === "Overdue");
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-6">
       <div className="max-w-4xl mx-auto space-y-6">
+
+        {/* Toolbar */}
         <div className="flex items-center justify-between no-print">
           <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
             <ChevronLeft className="w-4 h-4" /> Back
           </Button>
           <div className="flex gap-3">
-            <Button variant="outline" className="gap-2">
-              <Share2 className="w-4 h-4" /> Share
-            </Button>
             <Button variant="outline" className="gap-2" onClick={() => window.print()}>
               <Printer className="w-4 h-4" /> Print
             </Button>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+            <Button
+              className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+              onClick={() => window.print()}
+            >
               <Download className="w-4 h-4" /> Download PDF
             </Button>
           </div>
         </div>
 
+        {/* Pay panel */}
+        {canPay && (
+          <Card className="border-none shadow-sm bg-indigo-50 no-print">
+            <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex-1">
+                <h3 className="font-bold text-slate-900 mb-1">Pay this invoice</h3>
+                <p className="text-sm text-slate-500">
+                  Amount due:{" "}
+                  <strong className="text-indigo-600">{format(invoice.amount)}</strong>
+                </p>
+              </div>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <Input
+                  type="email"
+                  placeholder="Your email address"
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
+                  className="h-10 bg-white border-slate-200 max-w-xs"
+                />
+                <Button
+                  onClick={handlePay}
+                  disabled={paying || !clientEmail}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 whitespace-nowrap"
+                >
+                  {paying
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : <CreditCard className="w-4 h-4" />}
+                  Pay with Paystack
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Paid confirmation */}
+        {isPaid && invoice.paystack_reference && (
+          <Card className="border-none shadow-sm bg-emerald-50 no-print">
+            <CardContent className="p-4 flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <p className="text-sm text-emerald-800">
+                Paid{invoice.paid_at ? ` on ${new Date(invoice.paid_at).toLocaleDateString()}` : ""}.{" "}
+                Ref: <span className="font-mono font-bold">{invoice.paystack_reference}</span>
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Invoice document */}
         <Card className="border-none shadow-2xl overflow-hidden bg-white">
           <div className="h-2 bg-indigo-600" />
           <CardContent className="p-12 space-y-12">
+
+            {/* Agency + invoice number */}
             <div className="flex justify-between items-start">
               <div className="space-y-4">
-                <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-3xl">N</div>
+                <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-3xl">
+                  N
+                </div>
                 <div>
                   <h2 className="text-xl font-bold text-slate-900">NexWork Design Studio</h2>
                   <p className="text-slate-500">123 Creative Way, Lagos, Nigeria</p>
@@ -69,34 +230,40 @@ const InvoiceView = () => {
               </div>
               <div className="text-right space-y-2">
                 <h1 className="text-4xl font-black text-slate-900 tracking-tight">INVOICE</h1>
-                <p className="text-lg font-bold text-slate-500">#{invoice.id}</p>
-                <Badge className="bg-emerald-50 text-emerald-700 border-none px-4 py-1 text-sm">
-                  <CheckCircle2 className="w-4 h-4 mr-1 inline" /> {invoice.status}
+                <p className="text-lg font-bold text-slate-500">#{invoice.invoice_number}</p>
+                <Badge className={statusBadge(invoice.status)}>
+                  {isPaid && <CheckCircle2 className="w-4 h-4 mr-1 inline" />}
+                  {invoice.status}
                 </Badge>
               </div>
             </div>
 
+            {/* Bill to + dates */}
             <div className="grid grid-cols-2 gap-12 py-12 border-y border-slate-100">
               <div className="space-y-4">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Bill To</p>
                 <div>
-                  <p className="text-lg font-bold text-slate-900">{invoice.client.name}</p>
-                  <p className="text-slate-500 leading-relaxed">{invoice.client.address}</p>
-                  <p className="text-slate-500">{invoice.client.email}</p>
+                  <p className="text-lg font-bold text-slate-900">{invoice.client_name}</p>
+                  {clientEmail && <p className="text-slate-500">{clientEmail}</p>}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-1">
                   <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Date Issued</p>
-                  <p className="font-bold text-slate-900">{invoice.date}</p>
+                  <p className="font-bold text-slate-900">
+                    {new Date(invoice.created_at).toLocaleDateString()}
+                  </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Due Date</p>
-                  <p className="font-bold text-slate-900">{invoice.dueDate}</p>
+                  <p className="font-bold text-slate-900">
+                    {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : "—"}
+                  </p>
                 </div>
               </div>
             </div>
 
+            {/* Line items */}
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-100">
@@ -107,39 +274,50 @@ const InvoiceView = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {invoice.items.map((item, i) => (
-                  <tr key={i}>
-                    <td className="py-6 text-slate-900 font-medium">{item.description}</td>
-                    <td className="py-6 text-center text-slate-600">{item.qty}</td>
-                    <td className="py-6 text-right text-slate-600">${item.rate.toLocaleString()}</td>
-                    <td className="py-6 text-right text-slate-900 font-bold">${item.amount.toLocaleString()}</td>
+                {items.length > 0 ? (
+                  items.map((item, i) => (
+                    <tr key={i}>
+                      <td className="py-6 text-slate-900 font-medium">{item.description}</td>
+                      <td className="py-6 text-center text-slate-600">{item.quantity}</td>
+                      <td className="py-6 text-right text-slate-600">{format(item.rate)}</td>
+                      <td className="py-6 text-right text-slate-900 font-bold">{format(item.amount)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td className="py-6 text-slate-900 font-medium">{invoice.client_name} — Services</td>
+                    <td className="py-6 text-center text-slate-600">1</td>
+                    <td className="py-6 text-right text-slate-600">{format(invoice.amount)}</td>
+                    <td className="py-6 text-right text-slate-900 font-bold">{format(invoice.amount)}</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
 
+            {/* Totals */}
             <div className="flex justify-end pt-12">
               <div className="w-72 space-y-4">
                 <div className="flex justify-between text-slate-500">
                   <span>Subtotal</span>
-                  <span className="font-medium text-slate-900">${invoice.subtotal.toLocaleString()}</span>
+                  <span className="font-medium text-slate-900">{format(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-slate-500">
                   <span>Tax (0%)</span>
-                  <span className="font-medium text-slate-900">$0.00</span>
+                  <span className="font-medium text-slate-900">{format(0)}</span>
                 </div>
                 <div className="flex justify-between items-center pt-4 border-t border-slate-200">
                   <span className="text-lg font-bold text-slate-900">Total Amount</span>
-                  <span className="text-2xl font-black text-indigo-600">${invoice.total.toLocaleString()}</span>
+                  <span className="text-2xl font-black text-indigo-600">{format(invoice.amount)}</span>
                 </div>
               </div>
             </div>
 
+            {/* Notes */}
             <div className="pt-12 border-t border-slate-100">
               <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Notes</p>
               <p className="text-sm text-slate-500 leading-relaxed">
-                Thank you for your business! Please make payment within 14 days. 
-                For any questions regarding this invoice, please contact billing@nexwork.io.
+                {invoice.notes ||
+                  "Thank you for your business! Please make payment within 14 days. For any questions regarding this invoice, please contact hello@nexwork.io."}
               </p>
             </div>
           </CardContent>
