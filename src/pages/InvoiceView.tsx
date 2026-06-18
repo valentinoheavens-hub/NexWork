@@ -20,6 +20,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { showSuccess, showError } from "@/utils/toast";
 import { invoiceStore, Invoice } from "@/lib/invoiceStore";
 import { clientStore } from "@/lib/clientStore";
+import { getPaymentCurrency } from "@/lib/currency";
 
 declare global {
   interface Window {
@@ -41,7 +42,7 @@ const statusBadge = (status: string) =>
 const InvoiceView = () => {
   const { invoiceId } = useParams();
   const navigate = useNavigate();
-  const { format } = useCurrency();
+  const { format, code: currencyCode } = useCurrency();
 
   const [searchParams] = useSearchParams();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -111,8 +112,8 @@ const InvoiceView = () => {
     const handler = window.PaystackPop.setup({
       key: paystackKey,
       email: clientEmail,
-      amount: Math.round(invoice.amount * 100), // kobo / pesewas
-      currency: "NGN",
+      amount: Math.round(invoice.amount * 100), // smallest currency unit
+      currency: getPaymentCurrency(currencyCode),
       ref,
       metadata: {
         invoice_id: invoice.id,

@@ -109,10 +109,22 @@ const Settings = () => {
                           <SelectTrigger className="h-10 border-slate-200">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
-                            {currencies.map((cur) => (
+                          <SelectContent className="max-h-72">
+                            <SelectItem value="_group_pay" disabled className="text-xs font-semibold text-indigo-600 uppercase tracking-wide py-1">
+                              — Paystack &amp; Flutterwave supported —
+                            </SelectItem>
+                            {currencies.filter(c => c.paymentSupported).map((cur) => (
                               <SelectItem key={cur.code} value={cur.code}>
-                                <span className="font-mono text-slate-500 mr-2 text-xs">{cur.symbol}</span>
+                                <span className="font-mono text-slate-500 mr-2 text-xs w-8 inline-block">{cur.symbol}</span>
+                                {cur.name} ({cur.code})
+                              </SelectItem>
+                            ))}
+                            <SelectItem value="_group_display" disabled className="text-xs font-semibold text-slate-400 uppercase tracking-wide py-1 mt-1">
+                              — Display only (payments charged in USD) —
+                            </SelectItem>
+                            {currencies.filter(c => !c.paymentSupported).map((cur) => (
+                              <SelectItem key={cur.code} value={cur.code}>
+                                <span className="font-mono text-slate-400 mr-2 text-xs w-8 inline-block">{cur.symbol}</span>
                                 {cur.name} ({cur.code})
                               </SelectItem>
                             ))}
