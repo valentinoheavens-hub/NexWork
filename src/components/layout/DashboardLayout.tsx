@@ -45,9 +45,31 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/context/AuthContext";
+import { useNotifications } from "@/context/NotificationContext";
+import { formatDistanceToNow } from "date-fns";
+
+const notifIcon = (type: string) => {
+  switch (type) {
+    case 'invoice_paid':    return { icon: CreditCard,   color: 'text-emerald-500', bg: 'bg-emerald-50' };
+    case 'invoice_overdue': return { icon: Clock,         color: 'text-rose-500',    bg: 'bg-rose-50' };
+    case 'contract_signed': return { icon: FileText,      color: 'text-emerald-500', bg: 'bg-emerald-50' };
+    case 'contract_sent':   return { icon: FileText,      color: 'text-blue-500',    bg: 'bg-blue-50' };
+    case 'new_client':      return { icon: Users,         color: 'text-indigo-500',  bg: 'bg-indigo-50' };
+    default:                return { icon: Bell,          color: 'text-slate-500',   bg: 'bg-slate-50' };
+  }
+};
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
+  const { user, profile, signOut } = useAuth();
+  const { notifications, unreadCount, markRead, markAllRead } = useNotifications();
+
+  const displayName = profile?.full_name?.split(' ')[0]
+    ?? user?.user_metadata?.full_name?.split(' ')[0]
+    ?? user?.email?.split('@')[0]
+    ?? 'You';
+  const agencyName = profile?.agency_name ?? 'My Agency';
   
   const navigation = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -175,66 +197,100 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               </Button>
             </Link>
             
+            {/* Bell — live notifications */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="p-2 text-slate-400 hover:text-slate-600 relative rounded-full hover:bg-slate-50 transition-colors">
                   <Bell className="w-5 h-5" />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
+                  )}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80 p-0 border-none shadow-2xl rounded-2xl overflow-hidden">
-                <div className="p-4 bg-indigo-600 text-white">
-                  <h4 className="font-bold">Notifications</h4>
-                  <p className="text-xs text-indigo-100">You have 3 unread alerts</p>
+                <div className="p-4 bg-indigo-600 text-white flex items-center justify-between">
+                  <div>
+                    <h4 className="font-bold">Notifications</h4>
+                    <p className="text-xs text-indigo-100">
+                      {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+                    </p>
+                  </div>
+                  {unreadCount > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-indigo-100 hover:text-white hover:bg-white/10 text-xs h-7"
+                      onClick={markAllRead}
+                    >
+                      Mark all read
+                    </Button>
+                  )}
                 </div>
                 <div className="max-h-80 overflow-y-auto">
-                  {[
-                    { title: "Contract Signed", desc: "Sarah Chen signed the Brand Identity Agreement", time: "2m ago", icon: FileText, color: "text-emerald-500", bg: "bg-emerald-50" },
-                    { title: "Payment Received", desc: "Acme Corp paid Invoice #INV-001", time: "1h ago", icon: CreditCard, color: "text-blue-500", bg: "bg-blue-50" },
-                    { title: "New Message", desc: "Elena Moss sent you a message", time: "3h ago", icon: MessageSquare, color: "text-indigo-500", bg: "bg-indigo-50" },
-                  ].map((n, i) => (
-                    <div key={i} className="p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3">
-                      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", n.bg, n.color)}>
-                        <n.icon className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-900">{n.title}</p>
-                        <p className="text-xs text-slate-500 line-clamp-1">{n.desc}</p>
-                        <p className="text-[10px] text-slate-400 mt-1">{n.time}</p>
-                      </div>
+                  {notifications.length === 0 ? (
+                    <div className="py-10 text-center text-slate-400">
+                      <Bell className="w-6 h-6 mx-auto mb-2 opacity-40" />
+                      <p className="text-sm">No notifications yet</p>
                     </div>
-                  ))}
-                </div>
-                <div className="p-3 text-center border-t border-slate-50">
-                  <Button variant="ghost" size="sm" className="text-indigo-600 text-xs font-bold">View All Notifications</Button>
+                  ) : (
+                    notifications.slice(0, 10).map((n) => {
+                      const { icon: Icon, color, bg } = notifIcon(n.type);
+                      return (
+                        <div
+                          key={n.id}
+                          onClick={() => !n.read && markRead(n.id)}
+                          className={cn(
+                            "p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3",
+                            !n.read && "bg-indigo-50/40"
+                          )}
+                        >
+                          <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", bg, color)}>
+                            <Icon className="w-5 h-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-bold text-slate-900">{n.title}</p>
+                              {!n.read && <span className="w-2 h-2 bg-indigo-500 rounded-full shrink-0" />}
+                            </div>
+                            <p className="text-xs text-slate-500 line-clamp-2">{n.message}</p>
+                            <p className="text-[10px] text-slate-400 mt-1">
+                              {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
 
+            {/* User menu — real name + sign out */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 p-1 pr-3 rounded-full hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200">
-                  <div className="w-8 h-8 rounded-full bg-indigo-100 border border-indigo-200 overflow-hidden">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar" />
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center">
+                    <span className="text-indigo-700 font-bold text-sm">
+                      {displayName.charAt(0).toUpperCase()}
+                    </span>
                   </div>
                   <div className="text-left hidden sm:block">
-                    <p className="text-xs font-bold text-slate-900">Felix K.</p>
-                    <p className="text-[10px] text-slate-500">Pro Plan</p>
+                    <p className="text-xs font-bold text-slate-900">{displayName}</p>
+                    <p className="text-[10px] text-slate-500">{agencyName}</p>
                   </div>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 p-2 border-none shadow-2xl rounded-2xl">
-                <DropdownMenuLabel className="text-xs font-bold text-slate-400 uppercase tracking-widest p-2">My Account</DropdownMenuLabel>
-                <DropdownMenuItem className="rounded-xl cursor-pointer gap-2">
-                  <Users className="w-4 h-4" /> Profile Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem className="rounded-xl cursor-pointer gap-2">
-                  <CreditCard className="w-4 h-4" /> Billing & Subscription
+                <DropdownMenuLabel className="text-xs font-bold text-slate-400 uppercase tracking-widest p-2">
+                  My Account
+                </DropdownMenuLabel>
+                <DropdownMenuItem asChild className="rounded-xl cursor-pointer gap-2">
+                  <a href="/settings"><Settings className="w-4 h-4" /> Settings</a>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="my-2 bg-slate-100" />
                 <DropdownMenuItem
                   className="rounded-xl cursor-pointer gap-2 text-rose-600 focus:text-rose-600 focus:bg-rose-50"
-                  onClick={() => window.location.href = '/signin'}
+                  onClick={() => signOut()}
                 >
                   <LogOut className="w-4 h-4" /> Log out
                 </DropdownMenuItem>
