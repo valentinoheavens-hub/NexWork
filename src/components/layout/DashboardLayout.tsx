@@ -98,6 +98,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   ];
 
   const secondaryNav = [
+    { name: "Billing & Plan", href: "/billing", icon: Wallet },
     { name: "Help Center", href: "/help", icon: HelpCircle },
     { name: "Settings", href: "/settings", icon: Settings },
   ];

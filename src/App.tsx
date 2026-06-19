@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
+import { SubscriptionProvider } from "@/context/SubscriptionContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
@@ -51,6 +52,7 @@ import Calendar from "./pages/Calendar";
 import TeamOptimization from "./pages/TeamOptimization";
 import Automations from "./pages/Automations";
 import Payments from "./pages/Payments";
+import Billing from "./pages/Billing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +66,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
+          <SubscriptionProvider>
           <NotificationProvider>
           <Routes>
             {/* Public */}
@@ -113,9 +116,11 @@ const App = () => (
             <Route path="/calendar" element={<P el={<Calendar />} />} />
             <Route path="/automations" element={<P el={<Automations />} />} />
             <Route path="/payments" element={<P el={<Payments />} />} />
+            <Route path="/billing" element={<P el={<Billing />} />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </NotificationProvider>
+          </SubscriptionProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
