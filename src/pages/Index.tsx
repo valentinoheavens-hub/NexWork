@@ -270,10 +270,10 @@ const Index = () => {
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center">
-            <img src="/rendahq-logo.png" alt="RendaHQ" className="h-9 w-auto" />
+            <img src="/rendahq-logo.png" alt="RendaHQ" className="h-[4.5rem] w-auto" />
           </div>
 
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+          <div className="hidden md:flex items-center gap-8 text-lg font-medium text-slate-600">
             <a href="#features" className="hover:text-emerald-600 transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-emerald-600 transition-colors">How it works</a>
             <a href="#pricing" className="hover:text-emerald-600 transition-colors">Pricing</a>
@@ -281,10 +281,10 @@ const Index = () => {
 
           <div className="hidden md:flex items-center gap-3">
             <Link to="/signin">
-              <Button variant="ghost" className="text-slate-600 font-medium">Sign In</Button>
+              <Button variant="ghost" className="text-lg text-slate-600 font-medium">Sign In</Button>
             </Link>
             <Link to="/signin">
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 shadow-lg shadow-emerald-100">
+              <Button className="text-lg bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-5 shadow-lg shadow-emerald-100">
                 Get Started Free
               </Button>
             </Link>
