@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -30,13 +30,32 @@ import {
 } from "@/components/ui/dialog";
 import { showSuccess, showError } from "@/utils/toast";
 import { clientStore, Client } from "@/lib/clientStore";
+import { usePlan } from "@/context/SubscriptionContext";
+import UpgradeBanner from "@/components/UpgradeBanner";
 
 const Clients = () => {
+  const navigate = useNavigate();
+  const { limits, isFree } = usePlan();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Free tier caps active clients; null limit = unlimited (Agency/Enterprise).
+  const atClientLimit =
+    limits.maxClients !== null && clients.length >= limits.maxClients;
+
+  const tryAdd = () => {
+    if (atClientLimit) {
+      showError(
+        `You've reached the ${limits.maxClients}-client limit on the Free plan. Upgrade to add more.`
+      );
+      navigate("/billing");
+      return;
+    }
+    setShowDialog(true);
+  };
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -66,6 +85,11 @@ const Clients = () => {
 
   const handleSave = async () => {
     if (!form.name.trim()) { showError("Client name is required."); return; }
+    if (atClientLimit) {
+      showError("You've reached your Free-plan client limit. Upgrade to add more.");
+      navigate("/billing");
+      return;
+    }
     setSaving(true);
     try {
       await clientStore.create(form);
@@ -90,12 +114,25 @@ const Clients = () => {
           </div>
           <Button
             className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
-            onClick={() => setShowDialog(true)}
+            onClick={tryAdd}
           >
             <UserPlus className="w-4 h-4" />
             Add New Client
           </Button>
         </div>
+
+        {isFree && limits.maxClients !== null && (
+          atClientLimit ? (
+            <UpgradeBanner
+              title="You've reached your client limit"
+              message={`The Free plan includes ${limits.maxClients} active clients. Upgrade to Agency for unlimited clients.`}
+            />
+          ) : (
+            <p className="text-sm text-slate-500">
+              {clients.length} of {limits.maxClients} clients used on the Free plan.
+            </p>
+          )
+        )}
 
         <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-md">
@@ -175,7 +212,7 @@ const Clients = () => {
             ))}
 
             <button
-              onClick={() => setShowDialog(true)}
+              onClick={tryAdd}
               className="border-2 border-dashed border-slate-200 rounded-3xl p-6 flex flex-col items-center justify-center text-slate-400 hover:border-emerald-300 hover:text-emerald-500 transition-all min-h-[220px]"
             >
               <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-4">
