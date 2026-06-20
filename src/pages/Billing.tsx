@@ -40,17 +40,22 @@ const Billing = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [working, setWorking] = useState<string | null>(null);
 
-  // Handle return from a checkout redirect.
+  // Handle return from a checkout redirect (Stripe/Paystack use success|cancelled;
+  // Flutterwave appends successful|cancelled|failed).
   useEffect(() => {
     const s = params.get("status");
     if (!s) return;
-    if (s === "success") {
+    if (s === "success" || s === "successful" || s === "completed") {
       showSuccess("Payment received — activating your subscription…");
       refresh();
     } else if (s === "cancelled") {
       showError("Checkout cancelled. No charge was made.");
+    } else if (s === "failed") {
+      showError("Payment failed. Please try again.");
     }
     params.delete("status");
+    params.delete("tx_ref");
+    params.delete("transaction_id");
     setParams(params, { replace: true });
   }, [params, setParams, refresh]);
 

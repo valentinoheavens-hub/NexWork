@@ -120,5 +120,5 @@ export const PROVIDER_PLAN_REFS = {
 export const SUBSCRIPTION_PROVIDERS: { id: Provider; label: string; enabled: boolean }[] = [
   { id: "stripe", label: "Card (Stripe)", enabled: true },
   { id: "paystack", label: "Card / Bank / Mobile Money (Paystack)", enabled: true },
-  { id: "flutterwave", label: "Flutterwave", enabled: false },
+  { id: "flutterwave", label: "Card / Mobile Money / USSD (Flutterwave)", enabled: true },
 ];

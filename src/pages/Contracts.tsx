@@ -22,18 +22,29 @@ import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { generateContract } from "@/lib/ai";
 import { contractStore, Contract } from "@/lib/contractStore";
+import { useAuth } from "@/context/AuthContext";
+import { usePlan } from "@/context/SubscriptionContext";
+import { getUsage, incrementUsage, AI_CONTRACTS } from "@/lib/usage";
+import UpgradeBanner from "@/components/UpgradeBanner";
 
 const Contracts = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { limits, isFree } = usePlan();
   const [isGenerating, setIsGenerating] = useState(false);
   const [description, setDescription] = useState("");
   const [serviceType, setServiceType] = useState("Design Services");
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loadingContracts, setLoadingContracts] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [aiUsed, setAiUsed] = useState(0);
   // AI runs server-side via the ai-proxy edge function; gate on the (public)
   // backend URL, never the secret Groq key.
   const hasApiKey = Boolean(import.meta.env.VITE_SUPABASE_URL);
+
+  // Free tier caps AI contracts per month; null limit = unlimited.
+  const aiLimit = limits.aiContractsPerMonth;
+  const atAiLimit = aiLimit !== null && aiUsed >= aiLimit;
 
   useEffect(() => {
     contractStore.getAll()
@@ -41,6 +52,10 @@ const Contracts = () => {
       .catch(() => setContracts([]))
       .finally(() => setLoadingContracts(false));
   }, []);
+
+  useEffect(() => {
+    if (user) setAiUsed(getUsage(user.id, AI_CONTRACTS));
+  }, [user]);
 
   const filteredContracts = contracts.filter(
     (c) =>
@@ -52,6 +67,11 @@ const Contracts = () => {
     if (!description.trim()) return;
     if (!hasApiKey) {
       showError("RendaHQ AI is not configured. Please check your environment setup.");
+      return;
+    }
+    if (atAiLimit) {
+      showError(`You've used your ${aiLimit} AI contracts this month on the Free plan. Upgrade for unlimited.`);
+      navigate("/billing");
       return;
     }
 
@@ -69,6 +89,7 @@ const Contracts = () => {
         value: "$0.00",
       });
 
+      if (user) setAiUsed(incrementUsage(user.id, AI_CONTRACTS));
       showSuccess("Contract drafted by RendaHQ AI!");
       navigate(`/contract/edit/${contract.id}`);
     } catch (err: any) {
@@ -99,6 +120,19 @@ const Contracts = () => {
               <strong>RendaHQ AI is not configured.</strong> Please contact support or check your environment setup to enable AI generation.
             </p>
           </div>
+        )}
+
+        {isFree && aiLimit !== null && (
+          atAiLimit ? (
+            <UpgradeBanner
+              title="Monthly AI contract limit reached"
+              message={`The Free plan includes ${aiLimit} AI contracts per month. Upgrade to Agency for unlimited.`}
+            />
+          ) : (
+            <p className="text-sm text-slate-500">
+              {aiUsed} of {aiLimit} AI contracts used this month on the Free plan.
+            </p>
+          )
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -142,7 +176,7 @@ const Contracts = () => {
               <Button
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 rounded-xl font-bold group"
                 onClick={handleGenerate}
-                disabled={isGenerating || !description.trim() || !hasApiKey}
+                disabled={isGenerating || !description.trim() || !hasApiKey || atAiLimit}
               >
                 {isGenerating ? (
                   <>

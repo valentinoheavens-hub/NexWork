@@ -10,7 +10,7 @@ export interface CheckoutResult {
 const FUNCTION_FOR: Partial<Record<Provider, string>> = {
   stripe: "subscribe-stripe",
   paystack: "subscribe-paystack",
-  // flutterwave: "subscribe-flutterwave", // ships next
+  flutterwave: "subscribe-flutterwave",
 };
 
 // Kicks off a subscription checkout. The edge function identifies the user
@@ -27,6 +27,8 @@ export async function startSubscription(provider: Provider): Promise<CheckoutRes
         successUrl: `${origin}/billing?status=success`,
         cancelUrl: `${origin}/billing?status=cancelled`,
         callbackUrl: `${origin}/billing?status=success`,
+        // Flutterwave appends its own ?status=successful|cancelled, so send a clean URL.
+        redirectUrl: `${origin}/billing`,
       },
     });
 

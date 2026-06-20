@@ -24,6 +24,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { sendTestEmail } from "@/lib/email";
 import { useCurrency } from "@/hooks/useCurrency";
+import { usePlan } from "@/context/SubscriptionContext";
+import UpgradeBanner from "@/components/UpgradeBanner";
 import { showSuccess } from "@/utils/toast";
 import {
   Select,
@@ -37,6 +39,8 @@ const Settings = () => {
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const { code: currencyCode, currencies, setCurrency, format } = useCurrency();
+  const { can: planCan } = usePlan();
+  const canWhiteLabel = planCan.whiteLabel;
 
   const handleTestEmail = async () => {
     setIsSendingTest(true);
@@ -271,19 +275,23 @@ const Settings = () => {
                 <CardDescription>Connect your own domain to remove RendaHQ branding.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl flex gap-3">
-                  <Shield className="w-5 h-5 text-amber-600 shrink-0" />
-                  <div>
-                    <p className="text-sm font-bold text-amber-900">Agency Plan Required</p>
-                    <p className="text-sm text-amber-700">Custom domains are only available on the Agency and Scale plans.</p>
-                  </div>
-                </div>
+                {!canWhiteLabel && (
+                  <UpgradeBanner
+                    title="Agency plan required"
+                    message="White-label custom domains are available on the Agency plan. Upgrade to remove RendaHQ branding."
+                  />
+                )}
                 <div className="space-y-2">
                   <Label>Your Domain</Label>
                   <div className="flex gap-2">
-                    <Input placeholder="portal.youragency.com" disabled />
-                    <Button variant="outline" disabled>Connect</Button>
+                    <Input placeholder="portal.youragency.com" disabled={!canWhiteLabel} />
+                    <Button variant="outline" disabled={!canWhiteLabel}>Connect</Button>
                   </div>
+                  {canWhiteLabel && (
+                    <p className="text-xs text-emerald-600 flex items-center gap-1">
+                      <Check className="w-3 h-3" /> Included in your plan.
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
