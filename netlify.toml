@@ -1,0 +1,15 @@
+# Netlify configuration for the RendaHQ Vite + React SPA.
+[build]
+  command = "pnpm build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Single-page-app fallback: every path serves index.html so React Router
+# can handle client-side routes (e.g. /billing, /dashboard) on direct hits
+# and refreshes. Must be the last rule.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
