@@ -32,6 +32,8 @@ import {
   Layers,
   Wallet,
   Bot,
+  Menu,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -70,7 +72,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     ?? user?.email?.split('@')[0]
     ?? 'You';
   const agencyName = profile?.agency_name ?? 'My Agency';
-  
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const closeSidebar = () => setSidebarOpen(false);
+
   const navigation = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "Diagnostics", href: "/diagnostics", icon: Activity },
@@ -105,12 +109,33 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col sticky top-0 h-screen z-20">
-        <div className="p-6">
-          <Link to="/dashboard" className="flex items-center">
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/40 z-30 lg:hidden"
+          onClick={closeSidebar}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar — off-canvas drawer below lg, static at lg+ */}
+      <aside
+        className={cn(
+          "fixed lg:sticky top-0 inset-y-0 left-0 z-40 w-64 h-screen bg-white border-r border-slate-200 flex flex-col transform transition-transform duration-200 lg:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="p-6 flex items-center justify-between">
+          <Link to="/dashboard" className="flex items-center" onClick={closeSidebar}>
             <img src="/rendahq-logo.png" alt="RendaHQ" className="h-9 w-auto" />
           </Link>
+          <button
+            className="lg:hidden p-1 text-slate-400 hover:text-slate-600"
+            onClick={closeSidebar}
+            aria-label="Close menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
@@ -122,6 +147,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                 <Link
                   key={item.name}
                   to={item.href}
+                  onClick={closeSidebar}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all",
                     isActive 
@@ -144,6 +170,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                 <Link
                   key={item.name}
                   to={item.href}
+                  onClick={closeSidebar}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all",
                     isActive 
@@ -176,12 +203,19 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
-          <div className="flex items-center gap-4 flex-1 max-w-md">
-            <div className="relative w-full">
+        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between gap-3 px-4 lg:px-8 sticky top-0 z-10">
+          <div className="flex items-center gap-3 flex-1 max-w-md">
+            <button
+              className="lg:hidden p-2 -ml-1 shrink-0 text-slate-600 hover:bg-slate-100 rounded-lg"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="relative w-full hidden sm:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input 
-                placeholder="Search clients, projects, invoices..." 
+              <Input
+                placeholder="Search clients, projects, invoices..."
                 className="pl-10 bg-slate-50 border-none focus-visible:ring-1 focus-visible:ring-emerald-500 h-9"
               />
             </div>
@@ -297,7 +331,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </header>
 
-        <div className="p-8">
+        <div className="p-4 md:p-6 lg:p-8">
           {children}
         </div>
       </main>
