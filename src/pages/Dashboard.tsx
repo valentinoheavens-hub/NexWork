@@ -3,6 +3,9 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { useAuth } from "@/context/AuthContext";
 import { clientStore } from "@/lib/clientStore";
 import { invoiceStore } from "@/lib/invoiceStore";
+import { projectStore, Project } from "@/lib/projectStore";
+import { useNotifications } from "@/context/NotificationContext";
+import { formatDistanceToNow } from "date-fns";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -28,15 +31,18 @@ import { Link } from "react-router-dom";
 const Dashboard = () => {
   const { format } = useCurrency();
   const { user } = useAuth();
+  const { notifications } = useNotifications();
   const displayName = user?.user_metadata?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "there";
 
   const [clientCount, setClientCount] = useState<number | null>(null);
   const [revenue, setRevenue] = useState<number | null>(null);
   const [pendingTotal, setPendingTotal] = useState<number | null>(null);
   const [pendingCount, setPendingCount] = useState<number>(0);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     clientStore.getAll().then((cs) => setClientCount(cs.length)).catch(() => setClientCount(0));
+    projectStore.getAll().then(setProjects).catch(() => setProjects([]));
     invoiceStore.getAll().then((invs) => {
       const paid = invs.filter((i) => i.status === "Paid").reduce((s, i) => s + i.amount, 0);
       const pending = invs.filter((i) => i.status === "Sent" || i.status === "Overdue");
@@ -45,6 +51,8 @@ const Dashboard = () => {
       setPendingCount(pending.length);
     }).catch(() => { setRevenue(0); setPendingTotal(0); });
   }, []);
+
+  const recentProjects = projects.slice(0, 3);
 
   const stats = [
     { title: "Total Revenue", value: revenue !== null ? format(revenue) : "—", change: "Paid invoices", icon: TrendingUp, color: "text-emerald-600" },
@@ -60,12 +68,6 @@ const Dashboard = () => {
     { name: "Track Payments", icon: Wallet, href: "/payments", color: "bg-amber-50 text-amber-600" },
     { name: "Automations", icon: Bot, href: "/automations", color: "bg-violet-50 text-violet-600" },
     { name: "Add Client", icon: Users, href: "/clients", color: "bg-rose-50 text-rose-600" },
-  ];
-
-  const recentProjects = [
-    { id: 1, name: "Brand Identity", client: "Acme Corp", status: "In Progress", health: "Healthy", progress: 65 },
-    { id: 2, name: "Mobile App UI", client: "Global Tech", status: "Under Review", health: "At Risk", progress: 90 },
-    { id: 3, name: "Marketing Strategy", client: "Zest Foods", status: "Completed", health: "Healthy", progress: 100 },
   ];
 
   return (
@@ -133,6 +135,14 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
+                {recentProjects.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-slate-400 text-sm mb-3">No active projects yet.</p>
+                    <Link to="/project/new">
+                      <Button variant="outline" className="border-slate-200">Create your first project</Button>
+                    </Link>
+                  </div>
+                )}
                 {recentProjects.map((project) => (
                   <Link key={project.id} to={`/project/${project.id}`} className="block">
                     <div className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-emerald-100 transition-colors group">
@@ -142,7 +152,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                           <h4 className="font-bold text-slate-900">{project.name}</h4>
-                          <p className="text-sm text-slate-500">{project.client}</p>
+                          <p className="text-sm text-slate-500">{project.client_name}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-8">
@@ -182,20 +192,20 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {[
-                  { user: "Sarah Chen", action: "signed the contract", time: "2h ago", type: "contract" },
-                  { user: "Acme Corp", action: "paid invoice #INV-001", time: "5h ago", type: "payment" },
-                  { user: "Global Tech", action: "requested a scope change", time: "1d ago", type: "scope" },
-                ].map((activity, i) => (
-                  <div key={i} className="flex gap-3">
+                {notifications.length === 0 && (
+                  <p className="text-sm text-slate-400 py-4">No recent activity yet.</p>
+                )}
+                {notifications.slice(0, 5).map((n) => (
+                  <div key={n.id} className="flex gap-3">
                     <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
                       <div className="w-2 h-2 rounded-full bg-emerald-600" />
                     </div>
                     <div>
-                      <p className="text-sm text-slate-900">
-                        <span className="font-bold">{activity.user}</span> {activity.action}
+                      <p className="text-sm font-medium text-slate-900">{n.title}</p>
+                      {n.message && <p className="text-xs text-slate-500">{n.message}</p>}
+                      <p className="text-xs text-slate-400">
+                        {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
                       </p>
-                      <p className="text-xs text-slate-400">{activity.time}</p>
                     </div>
                   </div>
                 ))}
