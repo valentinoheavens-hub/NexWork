@@ -458,7 +458,8 @@ const InvoiceView = () => {
             </div>
 
             {/* Line items */}
-            <table className="w-full">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[480px]">
               <thead>
                 <tr className="border-b border-slate-100">
                   <th className="text-left py-4 text-xs font-bold uppercase tracking-widest text-slate-400">Description</th>
@@ -487,6 +488,7 @@ const InvoiceView = () => {
                 )}
               </tbody>
             </table>
+            </div>
 
             {/* Totals */}
             <div className="flex justify-end pt-12">
