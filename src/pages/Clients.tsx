@@ -98,7 +98,14 @@ const Clients = () => {
       setForm({ name: "", email: "", phone: "", company: "", status: "Active", notes: "" });
       loadClients();
     } catch (e: any) {
-      showError(e.message || "Failed to add client.");
+      const msg = `${e?.message ?? ""} ${e?.details ?? ""}`;
+      if (msg.includes("CLIENT_LIMIT_REACHED") || msg.includes("limited to")) {
+        showError(`Free plan is limited to ${limits.maxClients ?? 3} clients. Upgrade to Agency for unlimited.`);
+        setShowDialog(false);
+        navigate("/billing");
+      } else {
+        showError(e.message || "Failed to add client.");
+      }
     } finally {
       setSaving(false);
     }

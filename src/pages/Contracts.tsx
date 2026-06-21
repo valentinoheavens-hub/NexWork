@@ -24,7 +24,7 @@ import { generateContract } from "@/lib/ai";
 import { contractStore, Contract } from "@/lib/contractStore";
 import { useAuth } from "@/context/AuthContext";
 import { usePlan } from "@/context/SubscriptionContext";
-import { getUsage, incrementUsage, AI_CONTRACTS } from "@/lib/usage";
+import { supabase } from "@/lib/supabase";
 import UpgradeBanner from "@/components/UpgradeBanner";
 
 const Contracts = () => {
@@ -54,7 +54,15 @@ const Contracts = () => {
   }, []);
 
   useEffect(() => {
-    if (user) setAiUsed(getUsage(user.id, AI_CONTRACTS));
+    if (!user) return;
+    const period = new Date().toISOString().slice(0, 7); // YYYY-MM (UTC)
+    supabase
+      .from("usage_counters")
+      .select("count")
+      .eq("metric", "ai_contracts")
+      .eq("period", period)
+      .maybeSingle()
+      .then(({ data }) => setAiUsed(data?.count ?? 0));
   }, [user]);
 
   const filteredContracts = contracts.filter(
@@ -77,6 +85,20 @@ const Contracts = () => {
 
     setIsGenerating(true);
     try {
+      // Server-authoritative monthly cap: atomically checks the plan limit and
+      // increments. Throws AI_LIMIT_REACHED for Free users over 5/month.
+      const { data: usage, error: usageErr } = await supabase.rpc("consume_ai_contract");
+      if (usageErr) {
+        const m = `${usageErr.message ?? ""} ${(usageErr as any).details ?? ""}`;
+        if (m.includes("AI_LIMIT_REACHED") || m.includes("AI contracts")) {
+          showError("You've used your 5 AI contracts this month on the Free plan. Upgrade for unlimited.");
+          navigate("/billing");
+          return;
+        }
+        throw new Error(usageErr.message || "Could not start generation.");
+      }
+      if (usage && typeof (usage as any).used === "number") setAiUsed((usage as any).used);
+
       const aiContent = await generateContract(description, serviceType);
       const title = `${serviceType} — ${new Date().toLocaleDateString()}`;
 
@@ -89,7 +111,6 @@ const Contracts = () => {
         value: "$0.00",
       });
 
-      if (user) setAiUsed(incrementUsage(user.id, AI_CONTRACTS));
       showSuccess("Contract drafted by RendaHQ AI!");
       navigate(`/contract/edit/${contract.id}`);
     } catch (err: any) {
