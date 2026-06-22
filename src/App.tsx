@@ -11,6 +11,7 @@ import { NotificationProvider } from "@/context/NotificationContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import SignIn from "./pages/SignIn";
+import ResetPassword from "./pages/ResetPassword";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import BusinessDiagnostics from "./pages/BusinessDiagnostics";
@@ -73,6 +74,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/login" element={<SignIn />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/onboarding" element={<P el={<Onboarding />} />} />
             <Route path="/portal/:clientId" element={<ClientPortal />} />
             <Route path="/onboarding/:token" element={<ClientOnboarding />} />
