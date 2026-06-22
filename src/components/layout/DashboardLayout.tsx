@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
 import { useNotifications } from "@/context/NotificationContext";
+import { usePlan } from "@/context/SubscriptionContext";
 import { formatDistanceToNow } from "date-fns";
 
 const notifIcon = (type: string) => {
@@ -66,6 +67,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const { user, profile, signOut } = useAuth();
   const { notifications, unreadCount, markRead, markAllRead } = useNotifications();
+  const { plan, isTrialing, trialDaysLeft, isFree } = usePlan();
 
   const displayName = profile?.full_name?.split(' ')[0]
     ?? user?.user_metadata?.full_name?.split(' ')[0]
@@ -189,11 +191,19 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="p-4 border-t border-slate-100">
           <div className="bg-slate-900 rounded-2xl p-4 text-white relative overflow-hidden">
             <div className="relative z-10">
-              <p className="text-[10px] font-bold opacity-60 uppercase tracking-wider mb-1">Freelancer Plan</p>
-              <p className="text-sm font-bold mb-3">2/3 Clients Used</p>
-              <Button variant="secondary" size="sm" className="w-full bg-white/10 hover:bg-white/20 border-none text-white text-xs">
-                Upgrade to Agency
-              </Button>
+              <p className="text-[10px] font-bold opacity-60 uppercase tracking-wider mb-1">{plan.name} Plan</p>
+              <p className="text-sm font-bold mb-3">
+                {isTrialing
+                  ? `${trialDaysLeft} day${trialDaysLeft === 1 ? "" : "s"} left in trial`
+                  : isFree
+                  ? "Upgrade for unlimited"
+                  : "All features unlocked"}
+              </p>
+              <Link to="/billing" onClick={closeSidebar}>
+                <Button variant="secondary" size="sm" className="w-full bg-white/10 hover:bg-white/20 border-none text-white text-xs">
+                  {isTrialing ? "Subscribe now" : isFree ? "Upgrade to Agency" : "Manage billing"}
+                </Button>
+              </Link>
             </div>
             <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-emerald-600/20 rounded-full blur-2xl" />
           </div>
